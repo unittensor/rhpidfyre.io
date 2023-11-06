@@ -10,11 +10,13 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/vue": "^3.0.3",
     "astro": "^3.2.2",
     "autoprefixer": "^10.4.16",
     "scss": "^0.2.4",
     "three": "^0.158.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vue": "^3.2.30"
   },
   "devDependencies": {
     "@types/three": "^0.158.1"
