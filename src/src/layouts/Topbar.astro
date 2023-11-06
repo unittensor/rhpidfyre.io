@@ -1,0 +1,37 @@
+---
+interface Props {
+	CurrentPage: string
+}
+
+import TopbarButton from "../components/TopbarButton.astro";
+const {CurrentPage} = Astro.props
+---
+
+<header>
+	<TopbarButton Text="Home" Active={(CurrentPage == "Home").toString()}></TopbarButton>
+	<TopbarButton Text="About" Active={(CurrentPage == "About").toString()}></TopbarButton>
+	<TopbarButton Text="Projects" Active={(CurrentPage == "Projects").toString()}></TopbarButton>
+</header>
+
+<style lang="scss">
+	$Hover-Over-Time: .3s;
+	$Hover-Out-Time: .6s;
+
+	header {
+		display: flex;
+		background-color: #00000066;
+		width: 100vw;
+		height: var(--header-height);
+		top: -1px;
+		backdrop-filter: blur(10px);
+		gap: 5rem;
+		align-items: center;
+		justify-content: center;
+		position: sticky;
+		transition: background-color $Hover-Out-Time, height $Hover-Out-Time;
+
+		&.scrolling {
+
+		}
+	}
+</style>

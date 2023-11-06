@@ -1,0 +1,81 @@
+---
+interface Props {
+	Context: string
+}
+
+const {Context} = Astro.props
+import {t} from "../content/Home/main"
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="generator" content={Astro.generator}/>
+		<title>{`rhpidfyre.io | ${Context}`}</title>
+	</head>
+	<body data-context={Context}>
+		<slot/>
+		<!-- Not allowed to use "define:vars" with a module -->
+		<!-- Define the correct service module automatically here :] -->
+		<script is:inline define:vars={t}>
+			t()
+		</script>
+	</body>
+</html>
+
+<style lang="scss" is:global>
+	/* montserrat-regular - latin */
+	@font-face {
+		font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+		font-family: 'Montserrat';
+		font-style: normal;
+		font-weight: 400;
+		src: url('/fonts/montserrat-v26-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+	}
+
+	/* montserrat-700 - latin */
+	@font-face {
+		font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+		font-family: 'Montserrat';
+		font-style: normal;
+		font-weight: 700;
+		src: url('/fonts/montserrat-v26-latin-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+	}
+
+	:root {
+		--text-color-white: #f0f0f0;
+		--header-height: 6rem;
+	}
+
+	::selection {
+		background-color: #5e6d80;
+		color: white;
+	}
+
+	body {
+		box-sizing: border-box;
+		overflow-x: hidden;
+		margin: 0;
+		padding: 0;
+		background-color: #303841;
+
+		:is(h1, h2, p, button) {
+			font-family:
+				-apple-system,
+				BlinkMacSystemFont,
+				avenir next,
+				avenir,
+				segoe ui,
+				helvetica neue,
+				helvetica,
+				Cantarell,
+				Ubuntu,
+				roboto,
+				noto,
+				arial,
+				sans-serif;
+		}
+	}
+</style>

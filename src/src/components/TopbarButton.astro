@@ -1,0 +1,78 @@
+---
+interface Props {
+	Text: string,
+	Active: string,
+	PageLink?: string
+}
+
+const {Text, Active, PageLink = ""} = Astro.props
+---
+
+<div class="Topbar-Button" data-active={Active} data-topbar-button={Text}>
+	<a href={Active=="true" && "#" || PageLink}>
+		<button>{Text}</button>
+		<span></span>
+	</a>
+</div>
+
+<style lang="scss">
+	$Button-Hover-Time: .8s;
+
+	@mixin button($is-active) {
+		font: {
+			family: "Montserrat";
+			size: 1.3rem;
+
+			@if ($is-active) {
+				weight: bold;
+			}
+		}
+		background-color: transparent;
+		color: white;
+		border: 0;
+		cursor: pointer;
+	}
+
+	@mixin button-indicator($is-active) {
+		display: block;
+		height: 2px;
+		background-color: white;
+		margin-inline: auto;
+		margin-top: 5px;
+		transition: width $Button-Hover-Time;
+
+		@if ($is-active) {
+			width: 100%
+		} @else {
+			width: 10%;
+		}
+	}
+
+	.Topbar-Button {
+		display: grid;
+
+		@mixin topbar-buttons-style($active) {
+			> a {
+				text-decoration: none;
+
+				&:hover > span {
+					width: 100%;
+					transition: width calc($Button-Hover-Time / 2);
+				}
+				> button {
+					@include button($active);
+				}
+				> span {
+					@include button-indicator($active);
+				}
+			}
+		}
+
+		&[data-active="false"] {
+			@include topbar-buttons-style(false)
+		}
+		&[data-active="true"] {
+			@include topbar-buttons-style(true)
+		}
+	}
+</style>
