@@ -9,7 +9,7 @@ const {Text, Active, PageLink = ""} = Astro.props
 ---
 
 <div class="Topbar-Button" data-active={Active} data-topbar-button={Text}>
-	<a href={Active=="true" && "#" || PageLink}>
+	<a href={Active=="true" ? "#" : PageLink}>
 		<button>{Text}</button>
 		<span></span>
 	</a>

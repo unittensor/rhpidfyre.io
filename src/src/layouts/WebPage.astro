@@ -1,10 +1,10 @@
 ---
 interface Props {
-	Context: string
+	Context: string,
+	Description?: string
 }
 
-const {Context} = Astro.props
-import {t} from "../content/Home/main"
+const {Context,Description} = Astro.props
 ---
 
 <!doctype html>
@@ -13,15 +13,12 @@ import {t} from "../content/Home/main"
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 		<meta name="generator" content={Astro.generator}/>
+		<meta name="description" content={Description ? Description : `rhpidfyre.io | ${Context}`}/>
 		<title>{`rhpidfyre.io | ${Context}`}</title>
 	</head>
 	<body data-context={Context}>
 		<slot/>
-		<!-- Not allowed to use "define:vars" with a module -->
-		<!-- Define the correct service module automatically here :] -->
-		<script is:inline define:vars={t}>
-			t()
-		</script>
+ 	
 	</body>
 </html>
 
