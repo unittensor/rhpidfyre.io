@@ -1,12 +1,14 @@
 ---
-import WebPage from "../layouts/WebPage.astro";
+import WebPage from "../layouts/WebPage.astro"
 import Topbar from "../layouts/Topbar.astro"
+import WebGL from "../components/vue-home/WebGL.vue"
 ---
 
 <WebPage Context="Home">
+	<WebGL client:visible/>
 	<Topbar CurrentPage="Home"></Topbar>
 	<main>
-		<div id="">
+		<div id="welcome-content">
 			<h2 id="main-h2-text">You have reached the website for...</h2>
 			<h1 id="main-h1-text">rhpidfyre.io</h1>
 		</div>
@@ -23,7 +25,8 @@ import Topbar from "../layouts/Topbar.astro"
 		};
 		margin: 0 0 50px 0;
 		text-align: center;
-		color: var(--text-color-white);
+		color: white;
+		position: relative;
 	}
 
 	@mixin main-h2-props {
@@ -32,7 +35,8 @@ import Topbar from "../layouts/Topbar.astro"
 			size: 2.5rem;
 		};
 		text-align: center;
-		color: var(--text-color-white);
+		color: white;
+		position: relative;
 	}
 
 	@mixin main-header-container {
@@ -50,6 +54,8 @@ import Topbar from "../layouts/Topbar.astro"
 		align-items: center;
 		height: $Main-height;
 
-		
+		> #welcome-content {
+			@include main-header-container;
+		}
 	}
 </style>
