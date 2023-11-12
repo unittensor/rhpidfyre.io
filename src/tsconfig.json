@@ -13,5 +13,6 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"allowJs": true,
+		"types": ["../src/@types/"]
 	}
 }
