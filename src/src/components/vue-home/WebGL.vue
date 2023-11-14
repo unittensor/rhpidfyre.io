@@ -18,11 +18,12 @@
 </style>
 
 <script lang="ts">
-	import MountWebGL from "./HomeScene"
+	import WebGL from "./HomeWebGL"
 
 	export default {
-		mounted() {		
-			MountWebGL(this.$el)
+		mounted() {
+			const Context = new WebGL(this.$el)
+			Context.Mount() 
 		}
 	}
 </script>

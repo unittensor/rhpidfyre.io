@@ -5,7 +5,7 @@ import WebGL from "../components/vue-home/WebGL.vue"
 ---
 
 <WebPage Context="Home">
-	<WebGL client:visible/>
+	<WebGL client:only/>
 	<Topbar CurrentPage="Home"></Topbar>
 	<main>
 		<div id="welcome-content">
@@ -26,6 +26,7 @@ import WebGL from "../components/vue-home/WebGL.vue"
 		margin: 0 0 50px 0;
 		text-align: center;
 		color: white;
+		mix-blend-mode: difference;
 		position: relative;
 	}
 
@@ -36,6 +37,7 @@ import WebGL from "../components/vue-home/WebGL.vue"
 		};
 		text-align: center;
 		color: white;
+		mix-blend-mode: difference;
 		position: relative;
 	}
 

@@ -1,10 +1,8 @@
 type float = number
-type ufloat = number
 type int = number
 type uint = number
 type xfloat<xtype> = float
 type xint<xtype> = int
-type u_xfloat<xtype> = ufloat
 type u_xint<xtype> = uint
 
 type u8 = number
@@ -21,9 +19,9 @@ type i64 = number
 type f64 = number
 
 export {
-	float, ufloat,
+	float,
 	int, uint,
-	xfloat, u_xfloat,
+	xfloat,
 	xint, u_xint,
 	u8, i8, f8,
 	u16, i16, f16,
