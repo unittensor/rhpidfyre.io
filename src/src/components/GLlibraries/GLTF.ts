@@ -1,3 +1,4 @@
+import type { Mesh } from "three"
 import { GLTFLoader, type GLTF } from "three/examples/jsm/Addons.js"
 
 type GLTFPath = string
@@ -10,22 +11,29 @@ const Load_GLTF = async (GLTF_FILE: GLTFPath): Promise<GLTF> => {
 	})).catch((reason: string) => console.error(reason))
 }
 
-interface CachedGLTFs {
-	rhpidfyreio: Promise<GLTF> | null
+export interface GLTFModels {
+	rhpidfyreio: Mesh | null
 }
 
-const Cached: CachedGLTFs = {
+const Cached: GLTFModels = {
 	rhpidfyreio: null
 }
-const GetGLTF = async (GLTF_Name: string): Promise<GLTF> => {
+//@ts-ignore
+const GetGLTF = async (GLTF_Name: string): Mesh => {
 	if (Cached[GLTF_Name] == null) {
-		Cached[GLTF_Name] = await Load_GLTF(`/models/${GLTF_Name}.gltf`)
+		await Load_GLTF(`/models/${GLTF_Name}.gltf`).then((GLTF: GLTF) => {
+			GLTF.scene.traverse((GLTF_Mesh: Mesh) => {
+				if (GLTF_Mesh.isMesh) {
+					Cached[GLTF_Name] = GLTF_Mesh
+				}
+			})
+		}).catch((reason: string) => console.warn(reason))
 	}
 	return Cached[GLTF_Name]
 }
 
 const CreateGLTF = {
-	rhpidfyreio: (): Promise<GLTF> => GetGLTF("rhpidfyre3D")
+	rhpidfyreio: (): Mesh => GetGLTF("rhpidfyre3D")
 }
 
 export default CreateGLTF

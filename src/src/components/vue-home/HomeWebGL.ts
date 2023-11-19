@@ -33,17 +33,21 @@ const WebGL = class extends WebGL_Properties {
 	}
 
 	public Mount(): void {
-		MeshInstance.rhpidfyreio_text_3D()
+		MeshInstance.rhpidfyreio_text_3D().then((t)=>{
+			WebGL.Scene.add(t)
+		})
+		
 		WebGL.Renderer.setAnimationLoop((elapse: float) => {
 			const tick = elapse/WebGL.TickHz
 			const cost = Math.cos(tick*3)
 			const sint = Math.sin(tick*3)
 
-			// Camera.lookAt(Tesseract.position)
-			// Camera.position.set(sint*WebGL.RenderDistance, 2, cost*WebGL.RenderDistance)
+			if (MeshInstance.Instances.rhpidfyreio!=null) { //make better
+				WebGL.Camera.lookAt(MeshInstance.Instances.rhpidfyreio.position)
+			}
+			WebGL.Camera.position.set(WebGL.RenderDistance+sint, WebGL.RenderDistance+sint/10, 0)
 			WebGL.Renderer.render(WebGL.Scene, WebGL.Camera)
 		})
-
 		window.addEventListener("resize", () => {
 			WebGL.Camera.aspect = window.innerWidth/window.innerHeight
 			WebGL.Camera.updateProjectionMatrix()
