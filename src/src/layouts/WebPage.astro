@@ -28,6 +28,10 @@ const {Context,Description} = Astro.props
 		--header-height: 6rem;
 	}
 
+	html {
+		color-scheme: dark;
+	}
+
 	body {
 		box-sizing: border-box;
 		overflow-x: hidden;
@@ -35,7 +39,7 @@ const {Context,Description} = Astro.props
 		padding: 0;
 		background-color: #303841;
 
-		:is(h1, h2, p, button) {
+		:where(h1, h2, p, button) {
 			font-family:
 				-apple-system,
 				BlinkMacSystemFont,

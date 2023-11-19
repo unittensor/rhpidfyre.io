@@ -1,50 +1,32 @@
-import { BoxGeometry, MeshBasicMaterial, Mesh, BufferGeometry, BufferAttribute } from "three"
+import { BoxGeometry, MeshBasicMaterial, Mesh, MeshPhongMaterial } from "three"
 import type {float, xint, i8} from "../../@types/numbers"
+import CreateGLTF from "./GLTF"
+import WebGL from "../vue-home/HomeWebGL"
 
-type GL_Cube = InstanceType<typeof Mesh>
-type GL_Tesseract = InstanceType<typeof Mesh>
+type GLCube = InstanceType<typeof Mesh>
 type Hexadecimal = xint<i8>
 type VertexVector = float[]
 
-const MeshInstance = class {
-	constructor() {}
-
-	public static Cube(Vertices: VertexVector, MaterialColor: Hexadecimal): GL_Cube {
+const MeshInstance = {
+	Cube: (Vertices: VertexVector, MaterialColor: Hexadecimal): GLCube => {
 		const Geometry = new BoxGeometry(...Vertices)
 		const Material = new MeshBasicMaterial({color: MaterialColor})
 		return new Mesh(Geometry, Material)
-	}
+	},
 
-	public static Tesseract(MaterialColor: Hexadecimal): GL_Tesseract {
-		const Vertices = new Float32Array([
-			0, 0, 0,
-			0, 0, 0,
-			0, 0, 0,
-			0, 0, 0,
-			0, 0, 0,
-			0, 0, 0,
-			0, 0, 0,
-			0, 0, 0,
-		])
-		const Indices = [
-			0, 3, 2,
-    		0, 1, 3,
-    		1, 7, 3,
-    		1, 5, 7,
-    		5, 6, 7,
-    		5, 4, 6,
-    		4, 2, 6,
-    		4, 0, 2,
-    		2, 7, 6,
-    		2, 3, 7,
-    		4, 1, 0,
-    		4, 5, 1
-		]
-		const Geometry = new BufferGeometry()
-							.setAttribute("position", new BufferAttribute(Vertices, 3))
-							.setIndex(Indices)
-		const Material = new MeshBasicMaterial({color: MaterialColor})
-		return new Mesh(Geometry, Material)
+	rhpidfyreio_text_3D: () => {
+		const rhpidfyreio = CreateGLTF.rhpidfyreio()
+		rhpidfyreio.then((decompiled_gltf) => {
+			const gltfMesh = decompiled_gltf.scene
+			const Camera = WebGL.Camera.position
+
+			gltfMesh.material = new MeshPhongMaterial({color: 0xfffff})
+
+			gltfMesh.rotation.x = 1.5708 //N[90 Degree, 5]
+			gltfMesh.position.set(Camera.x-2.2, Camera.y, Camera.z-3)
+
+			WebGL.Scene.add(gltfMesh)
+		}).catch((reason: string) => console.warn(reason))
 	}
 }
 

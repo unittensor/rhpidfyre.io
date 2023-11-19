@@ -23,7 +23,7 @@
 	export default {
 		mounted() {
 			const Context = new WebGL(this.$el)
-			Context.Mount() 
+			Context.Mount()
 		}
 	}
 </script>

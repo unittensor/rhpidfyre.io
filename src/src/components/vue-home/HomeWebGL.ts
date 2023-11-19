@@ -1,50 +1,57 @@
 import * as THREE from "three"
 import MeshInstance from "../GLlibraries/Mesh"
 import type { float, int } from "../../@types/numbers"
+import type { WebGLRenderer, Scene, PerspectiveCamera } from "three"
 
-const Renderer = new THREE.WebGLRenderer({
-	antialias: true,
-	alpha: true
-})
-const Scene = new THREE.Scene()
-const Camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, .1, 1000)
-Camera.position.set(0,5,15)
-
-const Tesseract = MeshInstance.Tesseract(0x7500ff)
-
-Scene.add(Tesseract)
-
-const WebGL = class {
+const WebGL_Properties = class {
+	//TODO: make these real properties
 	public static TickHz: int = 10_000
 	public static RenderDistance: float = 4
+	public static antialias: boolean = true
 
-	private WebGL_Context: HTMLElement
+	public static Renderer?: WebGLRenderer = undefined
+	public static Camera?: PerspectiveCamera = undefined
+	public static Scene?: Scene = undefined
+}
+
+const WebGL = class extends WebGL_Properties {
+	public WebGL_Context: HTMLElement
 
 	constructor(WebGL_Context: HTMLElement, TickHz?: int, RenderDistance?: float) {
+		super()
 		this.WebGL_Context = WebGL_Context
 		WebGL.TickHz = TickHz || WebGL.TickHz
 		WebGL.RenderDistance = RenderDistance || WebGL.RenderDistance
+
+		WebGL.Renderer = new THREE.WebGLRenderer({
+			antialias: WebGL.antialias,
+			alpha: true
+		})
+		WebGL.Scene = new THREE.Scene()
+		WebGL.Camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, .1, 1000)
+		WebGL.Camera.position.set(0,5,15)
 	}
 
 	public Mount(): void {
-		Renderer.setAnimationLoop((elapse: float) => {
+		MeshInstance.rhpidfyreio_text_3D()
+		WebGL.Renderer.setAnimationLoop((elapse: float) => {
 			const tick = elapse/WebGL.TickHz
 			const cost = Math.cos(tick*3)
 			const sint = Math.sin(tick*3)
 
-			Camera.lookAt(Tesseract.position)
+			// Camera.lookAt(Tesseract.position)
 			// Camera.position.set(sint*WebGL.RenderDistance, 2, cost*WebGL.RenderDistance)
-			Renderer.render(Scene, Camera)
+			WebGL.Renderer.render(WebGL.Scene, WebGL.Camera)
 		})
 
 		window.addEventListener("resize", () => {
-			Camera.aspect = window.innerWidth/window.innerHeight
-			Camera.updateProjectionMatrix()
-			Renderer.setSize(window.innerWidth, window.innerHeight)
+			WebGL.Camera.aspect = window.innerWidth/window.innerHeight
+			WebGL.Camera.updateProjectionMatrix()
+			WebGL.Renderer.setSize(window.innerWidth, window.innerHeight)
 		})
-		Renderer.setPixelRatio(window.devicePixelRatio)
-		Renderer.setSize(window.innerWidth, window.innerHeight)
-		this.WebGL_Context.appendChild(Renderer.domElement)
+		WebGL.Renderer.setPixelRatio(window.devicePixelRatio)
+		WebGL.Renderer.setSize(window.innerWidth, window.innerHeight)
+		this.WebGL_Context.appendChild(WebGL.Renderer.domElement)
 	}
 }
 
