@@ -1,7 +1,7 @@
 import * as THREE from "three"
 import MeshInstance from "../GLlibraries/Mesh"
 import type { float, int } from "../../@types/numbers"
-import type { WebGLRenderer, Scene, PerspectiveCamera, AxesHelper } from "three"
+import type { WebGLRenderer, Scene, PerspectiveCamera } from "three"
 
 const Vec3 = THREE.Vector3
 
@@ -37,7 +37,7 @@ const WebGL = class extends WebGL_Properties {
 		let rhpidfyreio_pos = new Vec3() //heh
 		MeshInstance.rhpidfyreio_compile().then((gltfMesh: THREE.Mesh) => { //make better
 			WebGL.Scene.add(gltfMesh)
-			rhpidfyreio_pos = new Vec3(2.3,0,0).add(gltfMesh.position)
+			rhpidfyreio_pos = new Vec3(2.4,0,0).add(gltfMesh.position)
 		})
 
 		WebGL.Renderer.setAnimationLoop((elapse: float) => {

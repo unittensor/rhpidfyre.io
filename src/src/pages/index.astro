@@ -2,6 +2,7 @@
 import WebPage from "../layouts/WebPage.astro"
 import Topbar from "../layouts/Topbar.astro"
 import WebGL from "../components/vue-home/WebGL.vue"
+import Footer from "../layouts/Footer.astro"
 ---
 
 <WebPage Context="Home">
@@ -12,10 +13,11 @@ import WebGL from "../components/vue-home/WebGL.vue"
 			<h2 id="main-h2-text">You have reached the website for...</h2>
 			<h1 id="main-h1-text">rhpidfyre.io</h1>
 		</div>
-		<div id="home-intro-content">
-			
+		<div id="section-middle">
+			<h1>asd</h1>
 		</div>
 	</main>
+	<Footer/>
 </WebPage>
 
 <style lang="scss">
@@ -59,6 +61,12 @@ import WebGL from "../components/vue-home/WebGL.vue"
 		}		
 	}
 
+	@mixin middle-section-layout {
+		width: 100vw;
+		height: 40vh;
+		background-color: var(--main-theme_secondary);
+	}
+
 	main {
 		display: grid;
 		justify-content: center;
@@ -72,6 +80,10 @@ import WebGL from "../components/vue-home/WebGL.vue"
 			height: inherit;
 
 			@include main-header-container;
+		}
+
+		> #section-middle {
+			@include middle-section-layout;
 		}
 	}
 </style>

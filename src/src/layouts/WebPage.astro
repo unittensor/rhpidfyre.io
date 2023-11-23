@@ -26,8 +26,12 @@ const {Context,Description} = Astro.props
 
 	:root {
 		--header-height: 6rem;
+		--header-height_toggle: 5rem;
 		--main-theme_primary: #303841;
+		--main-theme_secondary: #282e36;
 		--main-theme-header_primary: #00000066;
+		--main-theme-header_toggle: #000000cc;
+		--footer-theme_primary: #22272e;
 	}
 
 	::selection {
@@ -40,6 +44,7 @@ const {Context,Description} = Astro.props
 	}
 
 	body {
+		display: grid;
 		box-sizing: border-box;
 		overflow-x: hidden;
 		margin: 0;

@@ -11,11 +11,27 @@ const {CurrentPage} = Astro.props
 	<TopbarButton Text="Home" Active={(CurrentPage == "Home").toString()}></TopbarButton>
 	<TopbarButton Text="About" Active={(CurrentPage == "About").toString()}></TopbarButton>
 	<TopbarButton Text="Projects" Active={(CurrentPage == "Projects").toString()}></TopbarButton>
+	<TopbarButton Text="Servers" Active={(CurrentPage == "Servers").toString()}></TopbarButton>
 </header>
 
+{/*When scrolling activate the topbar style class*/}
+<script>
+	const Topbar = document.querySelector<HTMLElement>("header")
+	const ScrollingStarted = (entries: IntersectionObserverEntry[]): void => {
+		if (!entries[0].isIntersecting) {
+			Topbar.classList.add("scrolling")
+		} else {
+			Topbar.classList.remove("scrolling")
+		}
+	}
+	const TopbarObserver = new window.IntersectionObserver(ScrollingStarted, {
+		threshold: 1
+	})
+	TopbarObserver.observe(Topbar)
+</script>
+
 <style lang="scss">
-	$Hover-Over-Time: .3s;
-	$Hover-Out-Time: .6s;
+	$Hover-Out-Time: .3s;
 
 	header {
 		display: flex;
@@ -27,11 +43,15 @@ const {CurrentPage} = Astro.props
 		gap: 5rem;
 		align-items: center;
 		justify-content: center;
+		z-index: 1;
 		position: sticky;
-		transition: background-color $Hover-Out-Time, height $Hover-Out-Time;
+		transition: background-color $Hover-Out-Time, height $Hover-Out-Time, 
+					border-bottom-color $Hover-Out-Time, border-bottom-width $Hover-Out-Time;
 
 		&.scrolling {
-
+			background-color: var(--main-theme-header_toggle);
+			height: var(--header-height_toggle);
+			border-bottom: 2px solid #969696;
 		}
 	}
 </style>
