@@ -1,11 +1,13 @@
 import * as THREE from "three"
 import MeshInstance from "../GLlibraries/Mesh"
 import type { float, int } from "../../@types/numbers"
-import type { WebGLRenderer, Scene, PerspectiveCamera } from "three"
+import type { WebGLRenderer, Scene, PerspectiveCamera, AxesHelper } from "three"
+
+const Vec3 = THREE.Vector3
 
 const WebGL_Properties = class {
 	//TODO: make these real properties
-	public static TickHz: int = 10_000
+	public static TickHz: int = 5000
 	public static RenderDistance: float = 4
 	public static antialias: boolean = true
 
@@ -28,24 +30,23 @@ const WebGL = class extends WebGL_Properties {
 			alpha: true
 		})
 		WebGL.Scene = new THREE.Scene()
-		WebGL.Camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, .1, 1000)
-		WebGL.Camera.position.set(0,5,15)
+		WebGL.Camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, .1, 1000)
 	}
 
 	public Mount(): void {
-		MeshInstance.rhpidfyreio_text_3D().then((t)=>{
-			WebGL.Scene.add(t)
+		let rhpidfyreio_pos = new Vec3() //heh
+		MeshInstance.rhpidfyreio_compile().then((gltfMesh: THREE.Mesh) => { //make better
+			WebGL.Scene.add(gltfMesh)
+			rhpidfyreio_pos = new Vec3(2.3,0,0).add(gltfMesh.position)
 		})
-		
+
 		WebGL.Renderer.setAnimationLoop((elapse: float) => {
 			const tick = elapse/WebGL.TickHz
-			const cost = Math.cos(tick*3)
-			const sint = Math.sin(tick*3)
+			const sint = Math.sin(tick)
 
-			if (MeshInstance.Instances.rhpidfyreio!=null) { //make better
-				WebGL.Camera.lookAt(MeshInstance.Instances.rhpidfyreio.position)
-			}
-			WebGL.Camera.position.set(WebGL.RenderDistance+sint, WebGL.RenderDistance+sint/10, 0)
+			WebGL.Camera.lookAt(rhpidfyreio_pos)
+			WebGL.Camera.position.set(WebGL.RenderDistance+sint*2, WebGL.RenderDistance+sint/2, 0)
+			
 			WebGL.Renderer.render(WebGL.Scene, WebGL.Camera)
 		})
 		window.addEventListener("resize", () => {

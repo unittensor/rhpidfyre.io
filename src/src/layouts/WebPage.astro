@@ -26,6 +26,13 @@ const {Context,Description} = Astro.props
 
 	:root {
 		--header-height: 6rem;
+		--main-theme_primary: #303841;
+		--main-theme-header_primary: #00000066;
+	}
+
+	::selection {
+		background-color: white;
+		color: black
 	}
 
 	html {
@@ -37,7 +44,7 @@ const {Context,Description} = Astro.props
 		overflow-x: hidden;
 		margin: 0;
 		padding: 0;
-		background-color: #303841;
+		background-color: var(--main-theme_primary);
 
 		:where(h1, h2, p, button) {
 			font-family:

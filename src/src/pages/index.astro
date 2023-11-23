@@ -12,6 +12,9 @@ import WebGL from "../components/vue-home/WebGL.vue"
 			<h2 id="main-h2-text">You have reached the website for...</h2>
 			<h1 id="main-h1-text">rhpidfyre.io</h1>
 		</div>
+		<div id="home-intro-content">
+			
+		</div>
 	</main>
 </WebPage>
 
@@ -21,27 +24,33 @@ import WebGL from "../components/vue-home/WebGL.vue"
 	@mixin main-h1-props {
 		font: {
 			family: "Montserrat";
-			size: 4rem;
+			size: 4.7rem;
 		};
-		margin: 0 0 50px 0;
-		text-align: center;
-		color: white;
-		mix-blend-mode: difference;
-		position: relative;
+		margin: 0 {
+			inline: auto;
+		};
+		padding: 5px;
+		width: 70%;
 	}
 
 	@mixin main-h2-props {
 		font: {
 			family: "Montserrat";
 			size: 2.5rem;
+			weight: normal;
 		};
-		text-align: center;
-		color: white;
-		mix-blend-mode: difference;
-		position: relative;
+		padding: 15px;
+		margin-inline: auto;
 	}
 
 	@mixin main-header-container {
+		> :is(#main-h1-text, #main-h2-text) {
+			text-align: center;
+			color: white;
+			background-color: var(--main-theme-header_primary);
+			backdrop-filter: blur(5px);
+			border-radius: 10px;
+		}
 		> #main-h1-text {
 			@include main-h1-props;
 		}
@@ -53,10 +62,15 @@ import WebGL from "../components/vue-home/WebGL.vue"
 	main {
 		display: grid;
 		justify-content: center;
-		align-items: center;
 		height: $Main-height;
 
 		> #welcome-content {
+			display: inherit;
+			justify-content: inherit;
+			align-content: center;
+			width: 100vw;
+			height: inherit;
+
 			@include main-header-container;
 		}
 	}
