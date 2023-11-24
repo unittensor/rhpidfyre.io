@@ -1,9 +1,7 @@
 import * as THREE from "three"
 import MeshInstance from "../GLlibraries/Mesh"
 import type { float, int } from "../../@types/numbers"
-import type { WebGLRenderer, Scene, PerspectiveCamera, AxesHelper } from "three"
-
-const Vec3 = THREE.Vector3
+import type { WebGLRenderer, Scene, PerspectiveCamera } from "three"
 
 const Vec3 = THREE.Vector3
 
