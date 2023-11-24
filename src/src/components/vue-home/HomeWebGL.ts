@@ -5,6 +5,8 @@ import type { WebGLRenderer, Scene, PerspectiveCamera, AxesHelper } from "three"
 
 const Vec3 = THREE.Vector3
 
+const Vec3 = THREE.Vector3
+
 const WebGL_Properties = class {
 	//TODO: make these real properties
 	public static TickHz: int = 5000
@@ -37,7 +39,7 @@ const WebGL = class extends WebGL_Properties {
 		let rhpidfyreio_pos = new Vec3() //heh
 		MeshInstance.rhpidfyreio_compile().then((gltfMesh: THREE.Mesh) => { //make better
 			WebGL.Scene.add(gltfMesh)
-			rhpidfyreio_pos = new Vec3(2.3,0,0).add(gltfMesh.position)
+
 		})
 
 		WebGL.Renderer.setAnimationLoop((elapse: float) => {

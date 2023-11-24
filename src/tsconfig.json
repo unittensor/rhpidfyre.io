@@ -13,6 +13,11 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"allowJs": true,
-		"types": ["../src/@types/"]
+		"types": ["../src/@types/"],
+		"plugins": [
+			{
+				"name": "@astrojs/ts-plugin"
+			}
+		]
 	}
 }
