@@ -37,7 +37,7 @@ const WebGL = class extends WebGL_Properties {
 		let rhpidfyreio_pos = new Vec3() //heh
 		MeshInstance.rhpidfyreio_compile().then((gltfMesh: THREE.Mesh) => { //make better
 			WebGL.Scene.add(gltfMesh)
-
+			rhpidfyreio_pos = new Vec3(2.3,0,0).add(gltfMesh.position)
 		})
 
 		WebGL.Renderer.setAnimationLoop((elapse: float) => {
