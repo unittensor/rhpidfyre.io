@@ -7,17 +7,16 @@ import Footer from "../layouts/Footer.astro"
 
 <WebPage Context="Home">
 	<WebGL client:only/>
-	<Topbar CurrentPage="Home"></Topbar>
+	<Topbar CurrentPage="Home"/>
 	<main>
 		<div id="welcome-content">
 			<h2 id="main-h2-text">You have reached the website for...</h2>
 			<h1 id="main-h1-text">rhpidfyre.io</h1>
 		</div>
-		<div id="section-middle">
-			<h1>asd</h1>
+		<div id="middle-section">
+			
 		</div>
 	</main>
-	<Footer/>
 </WebPage>
 
 <style lang="scss">
@@ -58,7 +57,7 @@ import Footer from "../layouts/Footer.astro"
 		}
 		> #main-h2-text {
 			@include main-h2-props;
-		}		
+		}
 	}
 
 	@mixin middle-section-layout {
@@ -71,18 +70,19 @@ import Footer from "../layouts/Footer.astro"
 		display: grid;
 		justify-content: center;
 		height: $Main-height;
+		position: relative;
 
 		> #welcome-content {
 			display: inherit;
 			justify-content: inherit;
 			align-content: center;
-			width: 100vw;
 			height: inherit;
+			width: 100vw;
 
 			@include main-header-container;
 		}
 
-		> #section-middle {
+		> #middle-section {
 			@include middle-section-layout;
 		}
 	}

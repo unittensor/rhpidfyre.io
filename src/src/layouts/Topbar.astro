@@ -8,21 +8,19 @@ const {CurrentPage} = Astro.props
 ---
 
 <header>
-	<TopbarButton Text="Home" Active={(CurrentPage == "Home").toString()}></TopbarButton>
-	<TopbarButton Text="About" Active={(CurrentPage == "About").toString()}></TopbarButton>
-	<TopbarButton Text="Projects" Active={(CurrentPage == "Projects").toString()}></TopbarButton>
-	<TopbarButton Text="Servers" Active={(CurrentPage == "Servers").toString()}></TopbarButton>
+	<TopbarButton Text="Home" Active={(CurrentPage == "Home").toString()}/>
+	<TopbarButton Text="About" Active={(CurrentPage == "About").toString()}/>
+	<TopbarButton Text="Projects" Active={(CurrentPage == "Projects").toString()}/>
+	<TopbarButton Text="Servers" Active={(CurrentPage == "Servers").toString()}/>
 </header>
+<div id="header-scrolling"></div>
 
-{/*When scrolling activate the topbar style class*/}
+{/*When scrolling, activate the topbar style class*/}
 <script>
 	const Topbar = document.querySelector<HTMLElement>("header")
+	const HeaderScrolling = document.getElementById("header-scrolling")
 	const ScrollingStarted = (entries: IntersectionObserverEntry[]): void => {
-		if (!entries[0].isIntersecting) {
-			Topbar.classList.add("scrolling")
-		} else {
-			Topbar.classList.remove("scrolling")
-		}
+		HeaderScrolling.classList.toggle("active", !entries[0].isIntersecting)
 	}
 	const TopbarObserver = new window.IntersectionObserver(ScrollingStarted, {
 		threshold: 1
@@ -31,7 +29,7 @@ const {CurrentPage} = Astro.props
 </script>
 
 <style lang="scss">
-	$Hover-Out-Time: .3s;
+	$Hover-Out-Time: .4s;
 
 	header {
 		display: flex;
@@ -45,13 +43,20 @@ const {CurrentPage} = Astro.props
 		justify-content: center;
 		z-index: 1;
 		position: sticky;
-		transition: background-color $Hover-Out-Time, height $Hover-Out-Time, 
-					border-bottom-color $Hover-Out-Time, border-bottom-width $Hover-Out-Time;
+	}
 
-		&.scrolling {
-			background-color: var(--main-theme-header_toggle);
-			height: var(--header-height_toggle);
-			border-bottom: 2px solid #969696;
+	#header-scrolling {
+		background-color: white;
+		width: 0;
+		height: .1rem;
+		top: 95px;
+		margin-inline: auto;
+		z-index: 1;
+		position: sticky;
+		transition: width $Hover-Out-Time;
+
+		&.active {
+			width: 100vw
 		}
 	}
 </style>
