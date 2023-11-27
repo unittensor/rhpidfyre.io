@@ -14,12 +14,21 @@ import Footer from "../layouts/Footer.astro"
 			<h1 id="main-h1-text">rhpidfyre.io</h1>
 		</div>
 		<div id="middle-section">
-			
+			<div id="github-profile-content">		
+				<a href="https://github.com/interpreterK" target="_blank">
+					<img src="https://avatars.githubusercontent.com/u/80614657" alt="GitHub Avatar">
+				</a>
+				<h1 id="github-username">rhpidfyre</h1>
+			</div>
+			<div id="middle-about">
+				<h1>rhpidfyre.io is my personal website</h1>
+			</div>
 		</div>
 	</main>
 </WebPage>
 
 <style lang="scss">
+	$GitHub-nick: "interpreterK";
 	$Main-height: calc(100vh - var(--header-height));
 
 	@mixin main-h1-props {
@@ -48,7 +57,7 @@ import Footer from "../layouts/Footer.astro"
 		> :is(#main-h1-text, #main-h2-text) {
 			text-align: center;
 			color: white;
-			background-color: var(--main-theme-header_primary);
+			background-color: #1e2329cc;
 			backdrop-filter: blur(5px);
 			border-radius: 10px;
 		}
@@ -60,10 +69,31 @@ import Footer from "../layouts/Footer.astro"
 		}
 	}
 
-	@mixin middle-section-layout {
-		width: 100vw;
-		height: 40vh;
-		background-color: var(--main-theme_secondary);
+	@mixin middle-section-content {
+		h1 {
+			font: {
+				family: "Montserrat";
+				size: 2.2rem;
+			};
+			text-align: center;
+		}
+
+		> #github-profile-content {
+			img {
+				height: 280px;
+				border-radius: 50%;
+				transition: transform 1s;
+
+				&:hover {
+					transform: rotate(360deg);
+					transition: transform 1.5s;
+				}
+			}
+
+			#github-username::after {
+				content: " | #{$GitHub-nick}";
+			}
+		}
 	}
 
 	main {
@@ -83,7 +113,15 @@ import Footer from "../layouts/Footer.astro"
 		}
 
 		> #middle-section {
-			@include middle-section-layout;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 200px;
+			width: 100vw;
+			height: 40vh;
+			background-color: var(--main-theme_secondary);
+
+			@include middle-section-content;
 		}
 	}
 </style>
