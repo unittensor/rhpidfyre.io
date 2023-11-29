@@ -3,6 +3,16 @@ import WebPage from "../layouts/WebPage.astro"
 import Topbar from "../layouts/Topbar.astro"
 import WebGL from "../components/vue-home/WebGL.vue"
 import Footer from "../layouts/Footer.astro"
+
+interface PageLocations {
+	About: string,
+	Projects: string
+}
+
+const Pages: PageLocations = {
+	About: "",
+	Projects: ""
+}
 ---
 
 <WebPage Context="Home">
@@ -14,21 +24,28 @@ import Footer from "../layouts/Footer.astro"
 			<h1 id="main-h1-text">rhpidfyre.io</h1>
 		</div>
 		<div id="middle-section">
-			<div id="github-profile-content">		
+			<div id="github-profile-content">
 				<a href="https://github.com/interpreterK" target="_blank">
 					<img src="https://avatars.githubusercontent.com/u/80614657" alt="GitHub Avatar">
 				</a>
-				<h1 id="github-username">rhpidfyre</h1>
+				<h1 id="github-nick">rhpidfyre</h1>
+				<h2 id="github-username">interpreterK</h2>
 			</div>
-			<div id="middle-about">
+			<div id="side-about">
 				<h1>rhpidfyre.io is my personal website</h1>
+				<a href={Pages.About}>
+					<button>About &#8250;</button>
+				</a>
+				<a href={Pages.Projects}>
+					<button>Projects &#8250;</button>
+				</a>
 			</div>
 		</div>
+		<Footer/>
 	</main>
 </WebPage>
 
 <style lang="scss">
-	$GitHub-nick: "interpreterK";
 	$Main-height: calc(100vh - var(--header-height));
 
 	@mixin main-h1-props {
@@ -69,12 +86,30 @@ import Footer from "../layouts/Footer.astro"
 		}
 	}
 
+	@mixin profile-content {
+		> #github-nick {
+			font-size: 3rem;
+			margin-bottom: 0;
+		}
+
+		> #github-username {
+			font-weight: normal;
+			letter-spacing: 1px;
+			margin-top: 10px;
+			color: #b4b4b4
+		}
+	}
+
 	@mixin middle-section-content {
 		h1 {
 			font: {
 				family: "Montserrat";
 				size: 2.2rem;
 			};
+			text-align: center;
+			margin-top: 10px;
+		}
+		h2 {
 			text-align: center;
 		}
 
@@ -90,9 +125,7 @@ import Footer from "../layouts/Footer.astro"
 				}
 			}
 
-			#github-username::after {
-				content: " | #{$GitHub-nick}";
-			}
+			@include profile-content;
 		}
 	}
 
@@ -118,7 +151,7 @@ import Footer from "../layouts/Footer.astro"
 			align-items: center;
 			gap: 200px;
 			width: 100vw;
-			height: 40vh;
+			height: 35rem;
 			background-color: var(--main-theme_secondary);
 
 			@include middle-section-content;
