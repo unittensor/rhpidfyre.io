@@ -1,4 +1,9 @@
-import type {float} from "../../@types/numbers"
+import type {float, u16, u64} from "../../@types/numbers"
+
+type Radian = float
+
+const Deg = (Degree: u16): Radian => Degree*Math.PI/180
+const RandArbitrary = (min: u64, max: u64): float => min+max*Math.random()-min*Math.random()
 
 const Linear = (a: float, b: float, t: float): float => a-a*t+b*t
 
@@ -15,6 +20,8 @@ const OutBounce = (n: float): float => (n<0.363636 && n*n*n1 ||
 const OutQuad = (n: float): float => 2*n-n*n
 
 export {
+	Deg,
+	RandArbitrary,
 	Linear,
 	InOutBack,
 	OutBounce,

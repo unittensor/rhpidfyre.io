@@ -1,9 +1,30 @@
 import * as THREE from "three"
-import MeshInstance from "../GLlibraries/Mesh"
+import MeshInstance from "../GLlibraries/GLTF_Mesh"
+import { Deg, RandArbitrary } from "../GLlibraries/Math"
 import type { float, int } from "../../@types/numbers"
 import type { WebGLRenderer, Scene, PerspectiveCamera } from "three"
 
+type CameraPosition = THREE.Vector3
+
 const Vec3 = THREE.Vector3
+
+//make better
+const ClusterLoad_GLTF = (Scene: THREE.Scene, CameraVec: CameraPosition): void => {
+	const Up = 1.5708 //N[90 Degree, 5]
+
+	MeshInstance.rhpidfyreio_compile().then((rhpidfyreio_Mesh: THREE.Mesh) => {
+		rhpidfyreio_Mesh.rotation.x = Up
+		rhpidfyreio_Mesh.position.set(CameraVec.x-2.2, CameraVec.y, CameraVec.z-3)
+		Scene.add(rhpidfyreio_Mesh)
+	})
+
+	//Summation
+	MeshInstance.LaTeX_Sum_compile().then((LaTeX_Sum: THREE.Mesh) => {
+		LaTeX_Sum.position.set(CameraVec.x-3.5, CameraVec.y-.2, CameraVec.z-3)
+		LaTeX_Sum.rotation.x = Up
+		Scene.add(LaTeX_Sum)
+	})
+}
 
 const WebGL_Properties = class {
 	//TODO: make these real properties
@@ -34,11 +55,9 @@ const WebGL = class extends WebGL_Properties {
 	}
 
 	public Mount(): void {
-		let rhpidfyreio_pos = new Vec3() //heh
-		MeshInstance.rhpidfyreio_compile().then((gltfMesh: THREE.Mesh) => { //make better
-			WebGL.Scene.add(gltfMesh)
-			rhpidfyreio_pos = new Vec3(2.3,0,0).add(gltfMesh.position)
-		})
+		let rhpidfyreio_pos = new Vec3(2.3,.1).add(new Vec3(1.9488622070364956, 4.0372155517591235, -3)) //heh..
+		
+		ClusterLoad_GLTF(WebGL.Scene, WebGL.Camera.position)
 
 		WebGL.Renderer.setAnimationLoop((elapse: float) => {
 			const tick = elapse/WebGL.TickHz

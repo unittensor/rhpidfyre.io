@@ -4,7 +4,7 @@ interface Props {
 	Description?: string
 }
 
-const {Context,Description} = Astro.props
+const {Context, Description} = Astro.props
 ---
 
 <!doctype html>
@@ -15,6 +15,7 @@ const {Context,Description} = Astro.props
 		<meta name="generator" content={Astro.generator}/>
 		<meta name="description" content={Description ? Description : `rhpidfyre.io | ${Context}`}/>
 		<title>{`rhpidfyre.io | ${Context}`}</title>
+		<link rel="icon" type="image/x-icon" href="https://avatars.githubusercontent.com/u/80614657">
 	</head>
 	<body>
 		<slot/>
@@ -30,6 +31,7 @@ const {Context,Description} = Astro.props
 		--main-theme_secondary: #282e36;
 		--main-theme-header_primary: #1e2329;
 		--footer-theme_primary: #22272e;
+		--button-hover: #181c21;
 	}
 
 	::selection {

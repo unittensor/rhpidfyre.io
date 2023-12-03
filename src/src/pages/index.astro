@@ -6,13 +6,16 @@ import Footer from "../layouts/Footer.astro"
 
 interface PageLocations {
 	About: string,
-	Projects: string
+	Projects: string,
+	Servers: string
 }
 
 const Pages: PageLocations = {
 	About: "",
-	Projects: ""
+	Projects: "",
+	Servers: ""
 }
+
 ---
 
 <WebPage Context="Home">
@@ -26,23 +29,31 @@ const Pages: PageLocations = {
 		<div id="middle-section">
 			<div id="github-profile-content">
 				<a href="https://github.com/interpreterK" target="_blank">
-					<img src="https://avatars.githubusercontent.com/u/80614657" alt="GitHub Avatar">
+					<img src="https://avatars.githubusercontent.com/u/80614657" alt="GitHub Avatar Image">
 				</a>
 				<h1 id="github-nick">rhpidfyre</h1>
 				<h2 id="github-username">interpreterK</h2>
 			</div>
 			<div id="side-about">
 				<h1>rhpidfyre.io is my personal website</h1>
-				<a href={Pages.About}>
-					<button>About &#8250;</button>
-				</a>
-				<a href={Pages.Projects}>
-					<button>Projects &#8250;</button>
-				</a>
+				<h2 id="">Lorem ipsum dolor sit amet.</h2>
+				<div class="middle-buttons">
+					<a href={Pages.About}>
+						<button>About</button>
+					</a>
+					<a href={Pages.Projects}>
+						<button>Projects</button>
+					</a>
+				</div>
+				<div class="middle-buttons">
+					<a href={Pages.Servers}>
+						<button>Servers</button>
+					</a>
+				</div>
 			</div>
 		</div>
-		<Footer/>
 	</main>
+	<Footer/>
 </WebPage>
 
 <style lang="scss">
@@ -78,11 +89,26 @@ const Pages: PageLocations = {
 			backdrop-filter: blur(5px);
 			border-radius: 10px;
 		}
+
 		> #main-h1-text {
-			@include main-h1-props;
+			font: {
+				family: "Montserrat";
+				size: 4.7rem;
+			};
+			margin: 0 {
+				inline: auto;
+			};
+			padding: 5px;
+			width: 70%;
 		}
 		> #main-h2-text {
-			@include main-h2-props;
+			font: {
+				family: "Montserrat";
+				size: 2.5rem;
+				weight: normal;
+			};
+			padding: 15px;
+			margin-inline: auto;
 		}
 	}
 
@@ -96,7 +122,7 @@ const Pages: PageLocations = {
 			font-weight: normal;
 			letter-spacing: 1px;
 			margin-top: 10px;
-
+			color: #969696;
 		}
 	}
 
@@ -113,7 +139,21 @@ const Pages: PageLocations = {
 			text-align: center;
 		}
 
+		.middle-buttons {
+			display: flex;
+			justify-content: space-evenly;
+		}
+
 		> #github-profile-content {
+			a {
+				display: block; //just for the text to be centered, why?
+				text-align: center;
+				font: {
+					family: "Montserrat";
+					size: 1.5rem
+				}
+			}
+
 			img {
 				height: 280px;
 				border-radius: 50%;
@@ -127,19 +167,41 @@ const Pages: PageLocations = {
 
 			@include profile-content;
 		}
+
+		> #side-about {
+			button {
+				font: {
+					family: "Montserrat";
+					size: 1.8rem;
+				};
+				cursor: pointer;
+				border: 2px solid #969696 {
+					radius: 10px
+				};
+				background-color: transparent;
+				padding: .5rem 5rem;
+				margin: 1rem 0 0 0;
+				transition: background-color .5s, border-color .5s;
+				
+				&:hover {
+					background-color: var(--button-hover);
+					border-color: white;
+					transition: background-color .2s, border-color .2s;
+				}
+			}
+		}
 	}
 
 	main {
 		display: grid;
 		justify-content: center;
-		height: $Main-height;
 		position: relative;
 
 		> #welcome-content {
 			display: inherit;
 			justify-content: inherit;
 			align-content: center;
-			height: inherit;
+			height: $Main-height;
 			width: 100vw;
 
 			@include main-header-container;

@@ -2,6 +2,17 @@ import type { Mesh } from "three"
 import { GLTFLoader, type GLTF } from "three/examples/jsm/Addons.js"
 
 type GLTFPath = string
+type GLTFName = string
+type Preload = Mesh | null
+
+export interface GLTFModels {
+	[x: string]: Preload
+}
+
+const Cached: GLTFModels = {
+	rhpidfyreio: null,
+	LaTeX_Sum: null
+}
 
 const GLTF_Constructor = new GLTFLoader() 
 const Load_GLTF = async (GLTF_FILE: GLTFPath): Promise<GLTF> => {
@@ -11,13 +22,6 @@ const Load_GLTF = async (GLTF_FILE: GLTFPath): Promise<GLTF> => {
 	})).catch((reason: string) => console.error(reason))
 }
 
-export interface GLTFModels {
-	rhpidfyreio: Mesh | null
-}
-
-const Cached: GLTFModels = {
-	rhpidfyreio: null
-}
 //@ts-ignore
 const GetGLTF = async (GLTF_Name: string): Mesh => {
 	if (Cached[GLTF_Name] == null) {
@@ -32,8 +36,6 @@ const GetGLTF = async (GLTF_Name: string): Mesh => {
 	return Cached[GLTF_Name]
 }
 
-const CreateGLTF = {
-	rhpidfyreio: (): Mesh => GetGLTF("rhpidfyre3D")
-}
+const CreateGLTF = (Name: GLTFName): Mesh => GetGLTF(Name)
 
 export default CreateGLTF
