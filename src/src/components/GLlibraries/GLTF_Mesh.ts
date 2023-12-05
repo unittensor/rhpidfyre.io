@@ -5,30 +5,25 @@ import {
 import type { GLTFModels } from "./GLTF"
 import CreateGLTF from "./GLTF"
 
-const MeshInstance = class {
-	public static Instances: GLTFModels = {
-        rhpidfyreio: null,
-        LaTeX_Sum: null,
-        LaTeX_delta: null
-    }
+type GLTFModelName = string
+type MeshInstances = {[x: string]: Promise<Msh>}
 
-	public static async rhpidfyreio_compile(): Promise<Msh> {
-		MeshInstance.Instances.rhpidfyreio = await CreateGLTF("rhpidfyre3D")
-		const rhpidfyreio = MeshInstance.Instances.rhpidfyreio
+const Instances: GLTFModels = {
+    rhpidfyreio: null,
+    LaTeX_Sum: null,
+	LaTeX_Power: null
+}
 
-		rhpidfyreio.material = new MeshNormalMaterial()
-		
-		return rhpidfyreio
-	}
+const GLTF_Model = async (Name: GLTFModelName): Promise<Msh> => {
+	Instances[Name] = await CreateGLTF(Name)
+	Instances[Name].material = new MeshNormalMaterial()
+	return Instances[Name]
+}
 
-	public static async LaTeX_Sum_compile(): Promise<Msh> {
-		MeshInstance.Instances.LaTeX_Sum = await CreateGLTF("LaTeX_Sum")
-		const LaTeXSum_Mesh = MeshInstance.Instances.LaTeX_Sum
-
-		LaTeXSum_Mesh.material = new MeshNormalMaterial()
-
-		return LaTeXSum_Mesh
-	}
+const MeshInstance: MeshInstances = {
+	rhpidfyreio_compile: GLTF_Model("rhpidfyreio"),
+	LaTeX_Sum_compile: GLTF_Model("LaTeX_Sum"),
+	LaTeX_Power_compile: GLTF_Model("LaTeX_Power")
 }
 
 export default MeshInstance

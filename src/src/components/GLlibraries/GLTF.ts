@@ -4,14 +4,12 @@ import { GLTFLoader, type GLTF } from "three/examples/jsm/Addons.js"
 type GLTFPath = string
 type GLTFName = string
 type Preload = Mesh | null
-
-export interface GLTFModels {
-	[x: string]: Preload
-}
+export type GLTFModels = {[x: string]: Preload}
 
 const Cached: GLTFModels = {
 	rhpidfyreio: null,
-	LaTeX_Sum: null
+	LaTeX_Sum: null,
+	LaTeX_Power: null
 }
 
 const GLTF_Constructor = new GLTFLoader() 

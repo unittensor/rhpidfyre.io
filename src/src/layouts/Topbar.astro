@@ -46,17 +46,18 @@ const {CurrentPage} = Astro.props
 	}
 
 	#header-scrolling {
-		background-color: #969696;
+		background-color: var(--border-color);
 		width: 0;
 		height: .1rem;
 		top: 95px;
 		margin-inline: auto;
 		z-index: 1;
 		position: sticky;
-		transition: width $Hover-Out-Time;
+		transition: width .6s;
 
 		&.active {
-			width: 100vw
+			width: 100vw;
+			transition: width $Hover-Out-Time;
 		}
 	}
 </style>

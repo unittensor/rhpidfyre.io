@@ -1,8 +1,7 @@
 import * as THREE from "three"
 import MeshInstance from "../GLlibraries/GLTF_Mesh"
-import { Deg, RandArbitrary } from "../GLlibraries/Math"
-import type { float, int } from "../../@types/numbers"
 import type { WebGLRenderer, Scene, PerspectiveCamera } from "three"
+import type { float, int } from "../../@types/numbers"
 
 type CameraPosition = THREE.Vector3
 
@@ -12,14 +11,21 @@ const Vec3 = THREE.Vector3
 const ClusterLoad_GLTF = (Scene: THREE.Scene, CameraVec: CameraPosition): void => {
 	const Up = 1.5708 //N[90 Degree, 5]
 
-	MeshInstance.rhpidfyreio_compile().then((rhpidfyreio_Mesh: THREE.Mesh) => {
-		rhpidfyreio_Mesh.rotation.x = Up
+	MeshInstance.rhpidfyreio_compile.then((rhpidfyreio_Mesh: THREE.Mesh) => {
 		rhpidfyreio_Mesh.position.set(CameraVec.x-2.2, CameraVec.y, CameraVec.z-3)
+		rhpidfyreio_Mesh.rotation.x = Up
 		Scene.add(rhpidfyreio_Mesh)
 	})
 
+	//Power
+	MeshInstance.LaTeX_Power_compile.then((LaTeX_Power: THREE.Mesh) => {
+		LaTeX_Power.position.set(CameraVec.x-3.5, CameraVec.y-.2, CameraVec.z-3)
+		LaTeX_Power.rotation.x = Up
+		Scene.add(LaTeX_Power)
+	})
+
 	//Summation
-	MeshInstance.LaTeX_Sum_compile().then((LaTeX_Sum: THREE.Mesh) => {
+	MeshInstance.LaTeX_Sum_compile.then((LaTeX_Sum: THREE.Mesh) => {
 		LaTeX_Sum.position.set(CameraVec.x-3.5, CameraVec.y-.2, CameraVec.z-3)
 		LaTeX_Sum.rotation.x = Up
 		Scene.add(LaTeX_Sum)
@@ -55,7 +61,7 @@ const WebGL = class extends WebGL_Properties {
 	}
 
 	public Mount(): void {
-		let rhpidfyreio_pos = new Vec3(2.3,.1).add(new Vec3(1.9488622070364956, 4.0372155517591235, -3)) //heh..
+		let rhpidfyreio_pos = new Vec3(2,.2).add(new Vec3(1.9488622070364956, 4.0372155517591235, -3)) //heh..
 		
 		ClusterLoad_GLTF(WebGL.Scene, WebGL.Camera.position)
 

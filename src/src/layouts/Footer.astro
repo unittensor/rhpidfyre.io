@@ -2,13 +2,51 @@
 ---
 
 <footer>
-	
+	<div class="footer-column-item" id="footer-main-container">
+		<div>
+			
+		</div>
+		<div></div>
+	</div>
+	<div class="footer-column-item" id="footer-copyright">
+		<p>Copyright &copy;2023; Programmed & Designed by <a href="https://github.com/interpreterK" target="_blank">rhpidfyre / interpreterK</a></p>
+	</div>
 </footer>
 
 <style lang="scss">
+	$Footer-main-height: 75%;
+
 	footer {
 		background-color: var(--footer-theme_primary);
+		border-top: 1px solid var(--border-color);
 		width: 100vw;
-		height: 15vh;
+		height: 280px;
+	}
+
+	#footer-main-container {
+		display: grid;
+		width: 100%;
+		height: $Footer-main-height;
+	}
+
+	#footer-copyright {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: var(--footer-theme_copyright);
+		height: calc(100% - $Footer-main-height);
+
+		p {
+			font: {
+				family: "Montserrat";
+				size: 1.1rem;
+			}
+			letter-spacing: .5px;
+
+			a {
+				text-decoration: none;
+				color: #bfbfbf;
+			}
+		}
 	}
 </style>

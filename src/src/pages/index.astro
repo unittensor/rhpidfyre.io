@@ -15,7 +15,6 @@ const Pages: PageLocations = {
 	Projects: "",
 	Servers: ""
 }
-
 ---
 
 <WebPage Context="Home">
@@ -36,20 +35,7 @@ const Pages: PageLocations = {
 			</div>
 			<div id="side-about">
 				<h1>rhpidfyre.io is my personal website</h1>
-				<h2 id="">Lorem ipsum dolor sit amet.</h2>
-				<div class="middle-buttons">
-					<a href={Pages.About}>
-						<button>About</button>
-					</a>
-					<a href={Pages.Projects}>
-						<button>Projects</button>
-					</a>
-				</div>
-				<div class="middle-buttons">
-					<a href={Pages.Servers}>
-						<button>Servers</button>
-					</a>
-				</div>
+				<h2>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sed error debitis deserunt quidem vel officiis possimus mollitia in dignissimos assumenda quas itaque, asperiores suscipit facilis nostrum expedita. Eveniet officiis, esse.</h2>
 			</div>
 		</div>
 	</main>
@@ -57,9 +43,44 @@ const Pages: PageLocations = {
 </WebPage>
 
 <style lang="scss">
-	$Main-height: calc(100vh - var(--header-height));
+	$Welcome-height: calc(100vh - var(--header-height));
 
-	@mixin main-h1-props {
+	main {
+		display: grid;
+		justify-content: center;
+	}
+
+	h1 {
+		font: {
+			family: "Montserrat";
+			size: 2.5rem;
+		};
+		text-align: center;
+		margin-top: 10px;
+	}
+
+	h2 {
+		text-align: center;
+		max-width: 1000px;
+	}
+
+	#welcome-content {
+		display: inherit;
+		justify-content: inherit;
+		align-content: center;
+		height: $Welcome-height;
+		width: 100vw;
+	}
+
+	#main-h1-text, #main-h2-text {
+		text-align: center;
+		color: white;
+		background-color: #1e2329cc;
+		backdrop-filter: blur(5px);
+		border-radius: 10px;
+	}
+
+	#main-h1-text {
 		font: {
 			family: "Montserrat";
 			size: 4.7rem;
@@ -71,7 +92,7 @@ const Pages: PageLocations = {
 		width: 70%;
 	}
 
-	@mixin main-h2-props {
+	#main-h2-text {
 		font: {
 			family: "Montserrat";
 			size: 2.5rem;
@@ -81,142 +102,52 @@ const Pages: PageLocations = {
 		margin-inline: auto;
 	}
 
-	@mixin main-header-container {
-		> :is(#main-h1-text, #main-h2-text) {
-			text-align: center;
-			color: white;
-			background-color: #1e2329cc;
-			backdrop-filter: blur(5px);
-			border-radius: 10px;
-		}
-
-		> #main-h1-text {
-			font: {
-				family: "Montserrat";
-				size: 4.7rem;
-			};
-			margin: 0 {
-				inline: auto;
-			};
-			padding: 5px;
-			width: 70%;
-		}
-		> #main-h2-text {
-			font: {
-				family: "Montserrat";
-				size: 2.5rem;
-				weight: normal;
-			};
-			padding: 15px;
-			margin-inline: auto;
-		}
-	}
-
-	@mixin profile-content {
-		> #github-nick {
-			font-size: 3rem;
-			margin-bottom: 0;
-		}
-
-		> #github-username {
-			font-weight: normal;
-			letter-spacing: 1px;
-			margin-top: 10px;
-			color: #969696;
-		}
-	}
-
-	@mixin middle-section-content {
-		h1 {
-			font: {
-				family: "Montserrat";
-				size: 2.2rem;
-			};
-			text-align: center;
-			margin-top: 10px;
-		}
-		h2 {
-			text-align: center;
-		}
-
-		.middle-buttons {
-			display: flex;
-			justify-content: space-evenly;
-		}
-
-		> #github-profile-content {
-			a {
-				display: block; //just for the text to be centered, why?
-				text-align: center;
-				font: {
-					family: "Montserrat";
-					size: 1.5rem
-				}
-			}
-
-			img {
-				height: 280px;
-				border-radius: 50%;
-				transition: transform 1s;
-
-				&:hover {
-					transform: rotate(360deg);
-					transition: transform 1.5s;
-				}
-			}
-
-			@include profile-content;
-		}
-
-		> #side-about {
-			button {
-				font: {
-					family: "Montserrat";
-					size: 1.8rem;
-				};
-				cursor: pointer;
-				border: 2px solid #969696 {
-					radius: 10px
-				};
-				background-color: transparent;
-				padding: .5rem 5rem;
-				margin: 1rem 0 0 0;
-				transition: background-color .5s, border-color .5s;
-				
-				&:hover {
-					background-color: var(--button-hover);
-					border-color: white;
-					transition: background-color .2s, border-color .2s;
-				}
-			}
-		}
-	}
-
-	main {
-		display: grid;
+	#middle-section {
+		display: flex;
 		justify-content: center;
-		position: relative;
+		align-items: center;
+		gap: 200px;
+		width: 100vw;
+		height: 35rem;
+		background-color: var(--main-theme_secondary);
+	}
 
-		> #welcome-content {
-			display: inherit;
-			justify-content: inherit;
-			align-content: center;
-			height: $Main-height;
-			width: 100vw;
+	#github-nick {
+		font-size: 3rem;
+		margin-bottom: 0;
+	}
 
-			@include main-header-container;
+	#github-username {
+		font-weight: normal;
+		letter-spacing: 1px;
+		margin-top: 10px;
+		color: #969696;
+	}
+
+	#side-about > h2 {
+		color: #e6e6e6;
+		font-weight: normal;
+	}
+
+	#github-profile-content {
+		a {
+			display: block; //just for the text to be centered, why?
+			text-align: center;
+			font: {
+				family: "Montserrat";
+				size: 1.5rem
+			}
 		}
 
-		> #middle-section {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			gap: 200px;
-			width: 100vw;
-			height: 35rem;
-			background-color: var(--main-theme_secondary);
+		img {
+			height: 280px;
+			border-radius: 50%;
+			transition: transform 1s;
 
-			@include middle-section-content;
+			&:hover {
+				transform: rotate(360deg);
+				transition: transform 1.5s;
+			}
 		}
 	}
 </style>
