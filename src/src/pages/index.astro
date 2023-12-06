@@ -3,25 +3,13 @@ import WebPage from "../layouts/WebPage.astro"
 import Topbar from "../layouts/Topbar.astro"
 import WebGL from "../components/vue-home/WebGL.vue"
 import Footer from "../layouts/Footer.astro"
-
-interface PageLocations {
-	About: string,
-	Projects: string,
-	Servers: string
-}
-
-const Pages: PageLocations = {
-	About: "",
-	Projects: "",
-	Servers: ""
-}
 ---
 
 <WebPage Context="Home">
 	<WebGL client:only/>
 	<Topbar CurrentPage="Home"/>
 	<main>
-		<div id="welcome-content">
+		<div id="welcome-section">
 			<h2 id="main-h2-text">You have reached the website for...</h2>
 			<h1 id="main-h1-text">rhpidfyre.io</h1>
 		</div>
@@ -43,7 +31,7 @@ const Pages: PageLocations = {
 </WebPage>
 
 <style lang="scss">
-	$Welcome-height: calc(100vh - var(--header-height));
+	@use "../sass/sizes";
 
 	main {
 		display: grid;
@@ -64,11 +52,11 @@ const Pages: PageLocations = {
 		max-width: 1000px;
 	}
 
-	#welcome-content {
+	#welcome-section {
 		display: inherit;
 		justify-content: inherit;
 		align-content: center;
-		height: $Welcome-height;
+		height: sizes.$Index-welcome-height;
 		width: 100vw;
 	}
 

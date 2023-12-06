@@ -6,7 +6,6 @@
 		<div>
 			
 		</div>
-		<div></div>
 	</div>
 	<div class="footer-column-item" id="footer-copyright">
 		<p>Copyright &copy;2023; Programmed & Designed by <a href="https://github.com/interpreterK" target="_blank">rhpidfyre / interpreterK</a></p>
@@ -14,7 +13,7 @@
 </footer>
 
 <style lang="scss">
-	$Footer-main-height: 75%;
+	@use "../sass/sizes";
 
 	footer {
 		background-color: var(--footer-theme_primary);
@@ -26,7 +25,7 @@
 	#footer-main-container {
 		display: grid;
 		width: 100%;
-		height: $Footer-main-height;
+		height: sizes.$Footer-main-height;
 	}
 
 	#footer-copyright {
@@ -34,7 +33,7 @@
 		justify-content: center;
 		align-items: center;
 		background-color: var(--footer-theme_copyright);
-		height: calc(100% - $Footer-main-height);
+		height: calc(100% - sizes.$Footer-main-height);
 
 		p {
 			font: {

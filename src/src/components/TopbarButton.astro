@@ -16,7 +16,7 @@ const {Text, Active, PageLink = ""} = Astro.props
 </div>
 
 <style lang="scss">
-	$Button-Hover-Time: .8s;
+	@use "../sass/transitions";
 
 	@mixin button($is-active) {
 		font: {
@@ -39,7 +39,7 @@ const {Text, Active, PageLink = ""} = Astro.props
 		background-color: white;
 		margin-inline: auto;
 		margin-top: 5px;
-		transition: width $Button-Hover-Time;
+		transition: width transitions.$Header-button-Hover-Time;
 
 		@if ($is-active) {
 			width: 100%
@@ -57,7 +57,7 @@ const {Text, Active, PageLink = ""} = Astro.props
 
 				&:hover > span {
 					width: 100%;
-					transition: width calc($Button-Hover-Time / 2);
+					transition: width transitions.$Header-button-Leave-Time;
 				}
 				> button {
 					@include button($active);
