@@ -29,7 +29,7 @@ const {CurrentPage} = Astro.props
 </script>
 
 <style lang="scss">
-	$Hover-Out-Time: .4s;
+	@use "../sass/transitions";
 
 	header {
 		display: flex;
@@ -53,11 +53,11 @@ const {CurrentPage} = Astro.props
 		margin-inline: auto;
 		z-index: 1;
 		position: sticky;
-		transition: width .6s;
+		transition: width transitions.$Header-border-scroll-start;
 
 		&.active {
 			width: 100vw;
-			transition: width $Hover-Out-Time;
+			transition: width transitions.$Header-border-scroll-attop;
 		}
 	}
 </style>

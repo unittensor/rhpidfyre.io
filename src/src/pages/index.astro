@@ -10,8 +10,8 @@ import Footer from "../layouts/Footer.astro"
 	<Topbar CurrentPage="Home"/>
 	<main>
 		<div id="welcome-section">
-			<h2 id="main-h2-text">You have reached the website for...</h2>
-			<h1 id="main-h1-text">rhpidfyre.io</h1>
+			<h2 id="welcome-h2-text">You have reached the website for...</h2>
+			<h1 id="welcome-h1-text">rhpidfyre.io</h1>
 		</div>
 		<div id="middle-section">
 			<div id="github-profile-content">
@@ -32,6 +32,7 @@ import Footer from "../layouts/Footer.astro"
 
 <style lang="scss">
 	@use "../sass/sizes";
+	@use "../sass/transitions";
 
 	main {
 		display: grid;
@@ -60,7 +61,7 @@ import Footer from "../layouts/Footer.astro"
 		width: 100vw;
 	}
 
-	#main-h1-text, #main-h2-text {
+	#welcome-h1-text, #welcome-h2-text {
 		text-align: center;
 		color: white;
 		background-color: #1e2329cc;
@@ -68,7 +69,7 @@ import Footer from "../layouts/Footer.astro"
 		border-radius: 10px;
 	}
 
-	#main-h1-text {
+	#welcome-h1-text {
 		font: {
 			family: "Montserrat";
 			size: 4.7rem;
@@ -80,7 +81,7 @@ import Footer from "../layouts/Footer.astro"
 		width: 70%;
 	}
 
-	#main-h2-text {
+	#welcome-h2-text {
 		font: {
 			family: "Montserrat";
 			size: 2.5rem;
@@ -130,11 +131,11 @@ import Footer from "../layouts/Footer.astro"
 		img {
 			height: 280px;
 			border-radius: 50%;
-			transition: transform 1s;
+			transition: transform transitions.$Index-image-hover-leave;
 
 			&:hover {
 				transform: rotate(360deg);
-				transition: transform 1.5s;
+				transition: transform transitions.$Index-image-hover;
 			}
 		}
 	}
