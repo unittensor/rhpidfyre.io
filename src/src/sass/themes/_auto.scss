@@ -1,0 +1,29 @@
+@use "sass:map";
+@use "./dark" as dark-theme;
+
+@mixin set-theme($Theme-Map) {
+	:root {
+		@each $theme-item, $theme-value in $Theme-Map {
+			@if ($theme-item != "html-scheme" and $theme-item != "Selections") {
+				--#{$theme-item}: #{$theme-value};
+			}
+		}
+	}
+
+	$Selection-themes: map.get(Theme-Map.$Selections, "Selections");
+	::selection {
+		background-color: map.get($Selection-themes, "background");
+		color: map.get($Selection-themes, "text-color")
+	}
+
+	html {
+		color-scheme: Theme-Map.$html-scheme;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	@include set-theme(dark-theme.$ColorPalette);
+}
+// @media (prefers-color-scheme: light) {
+// 	@include set-theme();
+// }

@@ -3,6 +3,8 @@ import WebPage from "../layouts/WebPage.astro"
 import Topbar from "../layouts/Topbar.astro"
 import WebGL from "../components/vue-home/WebGL.vue"
 import Footer from "../layouts/Footer.astro"
+
+import {GitHubLinks} from "../layouts/WebPage.astro"
 ---
 
 <WebPage Context="Home">
@@ -13,10 +15,10 @@ import Footer from "../layouts/Footer.astro"
 			<h2 id="welcome-h2-text">You have reached the website for...</h2>
 			<h1 id="welcome-h1-text">rhpidfyre.io</h1>
 		</div>
-		<div id="middle-section">
+		<div class="home-section" id="middle-section">
 			<div id="github-profile-content">
-				<a href="https://github.com/interpreterK" target="_blank">
-					<img src="https://avatars.githubusercontent.com/u/80614657" alt="GitHub Avatar Image">
+				<a href={GitHubLinks.URL} target="_blank">
+					<img src={GitHubLinks.ProfilePicture} alt="GitHub Avatar Image">
 				</a>
 				<h1 id="github-nick">rhpidfyre</h1>
 				<h2 id="github-username">interpreterK</h2>
@@ -33,17 +35,16 @@ import Footer from "../layouts/Footer.astro"
 <style lang="scss">
 	@use "../sass/sizes";
 	@use "../sass/transitions";
+	@use "../sass/mixins/fonts";
+	@use "../sass/mixins/layout";
 
 	main {
-		display: grid;
-		justify-content: center;
+		@include layout.grid(center);
 	}
 
 	h1 {
-		font: {
-			family: "Montserrat";
-			size: 2.5rem;
-		};
+		@include fonts.set("Montserrat", 2.5rem);
+
 		text-align: center;
 		margin-top: 10px;
 	}
@@ -51,6 +52,10 @@ import Footer from "../layouts/Footer.astro"
 	h2 {
 		text-align: center;
 		max-width: 1000px;
+	}
+
+	.home-section {
+
 	}
 
 	#welcome-section {
@@ -70,10 +75,8 @@ import Footer from "../layouts/Footer.astro"
 	}
 
 	#welcome-h1-text {
-		font: {
-			family: "Montserrat";
-			size: 4.7rem;
-		};
+		@include fonts.set("Montserrat", 4.7rem);
+
 		margin: 0 {
 			inline: auto;
 		};
@@ -82,11 +85,8 @@ import Footer from "../layouts/Footer.astro"
 	}
 
 	#welcome-h2-text {
-		font: {
-			family: "Montserrat";
-			size: 2.5rem;
-			weight: normal;
-		};
+		@include fonts.set("Montserrat", 2.5rem, normal);
+
 		padding: 15px;
 		margin-inline: auto;
 	}
@@ -120,12 +120,10 @@ import Footer from "../layouts/Footer.astro"
 
 	#github-profile-content {
 		a {
+			@include fonts.set("Montserrat", 1.5rem);
+
 			display: block; //just for the text to be centered, why?
 			text-align: center;
-			font: {
-				family: "Montserrat";
-				size: 1.5rem
-			}
 		}
 
 		img {

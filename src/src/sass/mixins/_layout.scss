@@ -1,0 +1,21 @@
+@mixin grid($X-align: null, $Y-align: null) {
+	display: grid;
+
+	@if ($X-align != null) {
+		justify-content: $X-align;
+	}
+	@if ($Y-align != null) {
+		align-items: $Y-align;
+	}
+}
+
+@mixin flex($X-align: null, $Y-align: null) {
+	display: flex;
+
+	@if ($X-align != null) {
+		justify-content: $X-align;
+	}
+	@if ($Y-align != null) {
+		align-items: $Y-align;
+	}
+}

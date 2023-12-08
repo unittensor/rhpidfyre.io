@@ -3,8 +3,17 @@ interface Props {
 	Context: string,
 	Description?: string
 }
+interface Links {
+	URL: string,
+	ProfilePicture: string
+}
 
 const {Context, Description} = Astro.props
+
+export const GitHubLinks: Links = {
+	URL: "https://github.com/interpreterK",
+	ProfilePicture: "https://avatars.githubusercontent.com/u/80614657"
+}
 ---
 
 <!doctype html>
@@ -15,7 +24,7 @@ const {Context, Description} = Astro.props
 		<meta name="generator" content={Astro.generator}/>
 		<meta name="description" content={Description ? Description : `rhpidfyre.io | ${Context}`}/>
 		<title>{`rhpidfyre.io | ${Context}`}</title>
-		<link rel="icon" type="image/x-icon" href="https://avatars.githubusercontent.com/u/80614657">
+		<link rel="icon" type="image/x-icon" href={GitHubLinks.ProfilePicture}>
 	</head>
 	<body>
 		<slot/>
@@ -23,26 +32,8 @@ const {Context, Description} = Astro.props
 </html>
 
 <style lang="scss" is:global>
-	@use "../fonts/fonts.css";
-
-	:root {
-		--border-color: #969696;
-		--main-theme_primary: #303841;
-		--main-theme_secondary: #282e36;
-		--main-theme-header_primary: #1e2329;
-		--footer-theme_primary: #22272e;
-		--footer-theme_copyright: #1c2026;
-		--button-hover: #181c21;
-	}
-
-	::selection {
-		background-color: white;
-		color: black
-	}
-
-	html {
-		color-scheme: dark;
-	}
+	@forward "../fonts/fonts.css";
+	@forward "../sass/themes/auto";
 
 	body {
 		display: grid;

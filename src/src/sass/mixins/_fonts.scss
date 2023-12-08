@@ -1,0 +1,13 @@
+
+
+@mixin set($face: null, $size: null, $weight: null) {
+	@if ($face != null) {
+		font-family: $face;
+	}
+	@if ($size != null) {
+		font-size: $size;
+	}
+	@if ($weight != null) {
+		font-weight: $weight;
+	}
+}
