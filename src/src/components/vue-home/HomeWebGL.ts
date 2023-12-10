@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import MeshInstance from "../GLlibraries/GLTF_Mesh"
+import MeshInstance from "./GLlibraries/GLTF_Mesh"
 import type { WebGLRenderer, Scene, PerspectiveCamera } from "three"
 import type { float, int } from "../../@types/numbers"
 

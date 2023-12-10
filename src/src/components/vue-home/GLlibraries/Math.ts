@@ -1,4 +1,4 @@
-import type {float, u16, u64} from "../../@types/numbers"
+import type {float, u16, u64} from "../../../@types/numbers"
 
 type Radian = float
 
