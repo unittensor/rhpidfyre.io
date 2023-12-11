@@ -17,16 +17,12 @@ const {Text, Active, PageLink = ""} = Astro.props
 
 <style lang="scss">
 	@use "../sass/transitions";
+	@use "../sass/mixins/layout";
+	@use "../sass/mixins/fonts";
 
 	@mixin button($is-active) {
-		font: {
-			family: "Montserrat";
-			size: 1.3rem;
+		@include fonts.Montserrat(1.3rem, $is-active and bold or null);
 
-			@if ($is-active) {
-				weight: bold;
-			}
-		}
 		background-color: transparent;
 		color: white;
 		border: 0;
@@ -37,33 +33,30 @@ const {Text, Active, PageLink = ""} = Astro.props
 		display: block;
 		height: 2px;
 		background-color: white;
-		margin-inline: auto;
-		margin-top: 5px;
+		margin: {
+			top: 5px;
+			inline: auto;
+		};
+		width: $is-active and 100% or 10%;
 		transition: width transitions.$Header-button-Hover-Time;
-
-		@if ($is-active) {
-			width: 100%
-		} @else {
-			width: 10%;
-		}
 	}
 
 	.Topbar-Button {
-		display: grid;
+		@include layout.grid(); //lole sure
 
 		@mixin topbar-buttons-style($active) {
 			> a {
 				text-decoration: none;
 
-				&:hover > span {
-					width: 100%;
-					transition: width transitions.$Header-button-Leave-Time;
-				}
 				> button {
 					@include button($active);
 				}
 				> span {
 					@include button-indicator($active);
+				}
+				&:hover > span {
+					width: 100%;
+					transition: width transitions.$Header-button-Leave-Time;
 				}
 			}
 		}

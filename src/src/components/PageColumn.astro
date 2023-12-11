@@ -1,0 +1,58 @@
+---
+---
+
+<div class="Column-section">
+	<div class="Column-content">
+		<slot/>
+	</div>
+</div>
+
+<style lang="scss" is:global>
+	@use "../sass/mixins/layout";
+	@use "../sass/mixins/fonts";
+
+	@mixin Column-section-text-styles {
+		h1 {
+			@include fonts.Montserrat(2.5rem);
+
+			text-align: center;
+			margin-top: 10px;
+		}
+
+		h2 {
+			@include fonts.OpenSans(1.4rem, normal);
+
+			text-align: center;
+			max-width: 1000px;
+		}
+	}
+
+	.Column-section {
+		@include layout.grid(center, center);
+
+		background-color: var(--main-theme_secondary);
+		width: 100vw;
+		height: 35rem;
+
+		&:nth-of-type(odd) {
+			background-color: var(--main-theme_primary);
+		}
+
+		&:nth-of-type(even) {
+			border: {
+				top: 1px solid var(--border-color-secondary);
+				bottom: 1px solid var(--border-color-secondary);
+			}
+		}
+
+		> .Column-content {
+			@include layout.flex(center, center);
+			
+			gap: 200px;
+			width: 100vw;
+			max-width: 1300px;
+		}
+
+		@include Column-section-text-styles;
+	}
+</style>

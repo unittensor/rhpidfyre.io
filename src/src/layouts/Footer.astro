@@ -15,6 +15,8 @@ import { GitHubLinks } from "./WebPage.astro";
 
 <style lang="scss">
 	@use "../sass/sizes";
+	@use "../sass/mixins/layout";
+	@use "../sass/mixins/fonts";
 
 	footer {
 		background-color: var(--footer-theme_primary);
@@ -24,23 +26,20 @@ import { GitHubLinks } from "./WebPage.astro";
 	}
 
 	#footer-main-container {
-		display: grid;
+		@include layout.grid();
+
 		width: 100%;
 		height: sizes.$Footer-main-height;
 	}
 
 	#footer-copyright {
-		display: flex;
-		justify-content: center;
-		align-items: center;
+		@include layout.flex(center, center);
+
 		background-color: var(--footer-theme_copyright);
 		height: calc(100% - sizes.$Footer-main-height);
 
 		p {
-			font: {
-				family: "Montserrat";
-				size: 1.1rem;
-			}
+			@include fonts.Montserrat(1.1rem);
 			letter-spacing: .5px;
 
 			a {

@@ -1,0 +1,5 @@
+@use "../mixins/layout";
+
+:global(main) {
+	@include layout.grid(center);
+}

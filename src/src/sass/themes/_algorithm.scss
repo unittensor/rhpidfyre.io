@@ -1,0 +1,17 @@
+@use 'sass:math';
+
+@function HSVtoHSL($H, $S, $V) {
+	//My version of what ever "https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_HSL" is offering
+	$LIGHT: $V-(($S*$V*$V)/2);
+	@if ($LIGHT == 0 or $LIGHT == 1) {
+		$SAT: 0;
+	} @else {
+		$SAT: (-$LIGHT+$V)/math.min(1-$LIGHT,$LIGHT)
+	};
+	@return hsl($H, $SAT, $LIGHT)
+}
+
+@function NewPalette($Base-Color-In-HSV) {
+	$HSL: HSVtoHSL();
+	@return
+}

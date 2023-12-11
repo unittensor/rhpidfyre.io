@@ -2,6 +2,7 @@
 import WebPage from "../layouts/WebPage.astro"
 import Topbar from "../layouts/Topbar.astro"
 import WebGL from "../components/vue-home/WebGL.vue"
+import PageColumn from "../components/PageColumn.astro"
 import Footer from "../layouts/Footer.astro"
 
 import {GitHubLinks} from "../layouts/WebPage.astro"
@@ -11,23 +12,27 @@ import {GitHubLinks} from "../layouts/WebPage.astro"
 	<WebGL client:only/>
 	<Topbar CurrentPage="Home"/>
 	<main>
-		<div id="welcome-section">
-			<h2 id="welcome-h2-text">You have reached the website for...</h2>
-			<h1 id="welcome-h1-text">rhpidfyre.io</h1>
+		<div id="Welcome-section">
+			<h2>You have reached the website for...</h2>
+			<h1>rhpidfyre.io</h1>
 		</div>
-		<div class="home-section" id="middle-section">
-			<div id="github-profile-content">
+		<!-- GitHub -->
+		<PageColumn>
+			<div id="GitHub-profile-section">
 				<a href={GitHubLinks.URL} target="_blank">
 					<img src={GitHubLinks.ProfilePicture} alt="GitHub Avatar Image">
 				</a>
-				<h1 id="github-nick">rhpidfyre</h1>
-				<h2 id="github-username">interpreterK</h2>
+				<h1 id="GitHub-Nickname">rhpidfyre</h1>
+				<h2 id="GitHub-Username">interpreterK</h2>
 			</div>
-			<div id="side-about">
+			<div>
 				<h1>rhpidfyre.io is my personal website</h1>
 				<h2>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sed error debitis deserunt quidem vel officiis possimus mollitia in dignissimos assumenda quas itaque, asperiores suscipit facilis nostrum expedita. Eveniet officiis, esse.</h2>
 			</div>
-		</div>
+		</PageColumn>
+		<PageColumn>
+			
+		</PageColumn>
 	</main>
 	<Footer/>
 </WebPage>
@@ -38,89 +43,50 @@ import {GitHubLinks} from "../layouts/WebPage.astro"
 	@use "../sass/mixins/fonts";
 	@use "../sass/mixins/layout";
 
-	main {
-		@include layout.grid(center);
-	}
+	@forward "../sass/layouts/home";
 
-	h1 {
-		@include fonts.set("Montserrat", 2.5rem);
+	#Welcome-section {
+		@include layout.grid(inherit, center, center);
 
-		text-align: center;
-		margin-top: 10px;
-	}
-
-	h2 {
-		text-align: center;
-		max-width: 1000px;
-	}
-
-	.home-section {
-
-	}
-
-	#welcome-section {
-		display: inherit;
-		justify-content: inherit;
-		align-content: center;
 		height: sizes.$Index-welcome-height;
 		width: 100vw;
+
+		//> :is(h1, h2)
+		@mixin Header-Block-Style {
+			text-align: center;
+			color: white;
+			background-color: #1e2329cc;
+			backdrop-filter: blur(5px);
+			border-radius: 10px;
+		}
+
+		> h1 { //"You have reached the website for..."
+			@include fonts.Montserrat(4.7rem);
+			@include Header-Block-Style;
+
+			margin: 0 {
+				inline: auto;
+			};
+			padding: 5px;
+			width: 70%;
+		}
+
+		> h2 { //"rhpidfyre.io"
+			@include fonts.Montserrat(2.5rem, normal);
+			@include Header-Block-Style;
+
+			padding: 15px;
+			margin-inline: auto;
+		}
 	}
+	
+	#GitHub-profile-section {
+		h2 {
+			margin-top: 0;
+		}
 
-	#welcome-h1-text, #welcome-h2-text {
-		text-align: center;
-		color: white;
-		background-color: #1e2329cc;
-		backdrop-filter: blur(5px);
-		border-radius: 10px;
-	}
-
-	#welcome-h1-text {
-		@include fonts.set("Montserrat", 4.7rem);
-
-		margin: 0 {
-			inline: auto;
-		};
-		padding: 5px;
-		width: 70%;
-	}
-
-	#welcome-h2-text {
-		@include fonts.set("Montserrat", 2.5rem, normal);
-
-		padding: 15px;
-		margin-inline: auto;
-	}
-
-	#middle-section {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 200px;
-		width: 100vw;
-		height: 35rem;
-		background-color: var(--main-theme_secondary);
-	}
-
-	#github-nick {
-		font-size: 3rem;
-		margin-bottom: 0;
-	}
-
-	#github-username {
-		font-weight: normal;
-		letter-spacing: 1px;
-		margin-top: 10px;
-		color: #969696;
-	}
-
-	#side-about > h2 {
-		color: #e6e6e6;
-		font-weight: normal;
-	}
-
-	#github-profile-content {
 		a {
-			@include fonts.set("Montserrat", 1.5rem);
+			@include fonts.Montserrat(1.5rem);
 
 			display: block; //just for the text to be centered, why?
 			text-align: center;
@@ -136,5 +102,6 @@ import {GitHubLinks} from "../layouts/WebPage.astro"
 				transition: transform transitions.$Index-image-hover;
 			}
 		}
+
 	}
 </style>

@@ -1,21 +1,21 @@
-@mixin grid($X-align: null, $Y-align: null) {
-	display: grid;
+@mixin layout-type($display-type, $X-align, $Y-align, $Content-align) {
+	display: $display-type;
 
 	@if ($X-align != null) {
 		justify-content: $X-align;
 	}
 	@if ($Y-align != null) {
 		align-items: $Y-align;
+	}
+	@if ($Content-align != null) {
+		align-content: $Content-align;
 	}
 }
 
-@mixin flex($X-align: null, $Y-align: null) {
-	display: flex;
+@mixin grid($X-align: null, $Y-align: null, $Content-align: null) {
+	@include layout-type(grid, $X-align, $Y-align, $Content-align)
+}
 
-	@if ($X-align != null) {
-		justify-content: $X-align;
-	}
-	@if ($Y-align != null) {
-		align-items: $Y-align;
-	}
+@mixin flex($X-align: null, $Y-align: null, $Content-align: null) {
+	@include layout-type(flex, $X-align, $Y-align, $Content-align)
 }

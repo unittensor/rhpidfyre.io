@@ -1,7 +1,9 @@
 @use "sass:map";
-@use "./dark" as dark-theme;
+@use "./Mariana" as mariana-theme;
 
 @mixin set-theme($Theme-Map) {
+	$Selection-themes: map.get($Theme-Map, "Selections");
+	
 	:root {
 		@each $theme-item, $theme-value in $Theme-Map {
 			@if ($theme-item != "html-scheme" and $theme-item != "Selections") {
@@ -10,19 +12,18 @@
 		}
 	}
 
-	$Selection-themes: map.get(Theme-Map.$Selections, "Selections");
 	::selection {
 		background-color: map.get($Selection-themes, "background");
 		color: map.get($Selection-themes, "text-color")
 	}
 
 	html {
-		color-scheme: Theme-Map.$html-scheme;
+		color-scheme: map.get($Theme-Map, "html-scheme");
 	}
 }
 
 @media (prefers-color-scheme: dark) {
-	@include set-theme(dark-theme.$ColorPalette);
+	@include set-theme(mariana-theme.$ColorPalette);
 }
 // @media (prefers-color-scheme: light) {
 // 	@include set-theme();

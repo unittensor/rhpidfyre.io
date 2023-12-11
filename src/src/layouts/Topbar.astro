@@ -30,27 +30,27 @@ const {CurrentPage} = Astro.props
 
 <style lang="scss">
 	@use "../sass/transitions";
+	@use "../sass/mixins/layout";
 
 	header {
-		display: flex;
+		@include layout.flex(center, center);
+
 		background-color: var(--main-theme-header_primary);
 		width: 100vw;
 		height: 6rem;
 		top: -1px;
 		backdrop-filter: blur(10px);
 		gap: 5rem;
-		align-items: center;
-		justify-content: center;
 		z-index: 1;
 		position: sticky;
 	}
 
 	#header-scrolling {
 		background-color: var(--border-color);
+		margin-inline: auto;
 		width: 0;
 		height: .1rem;
 		top: 95px;
-		margin-inline: auto;
 		z-index: 1;
 		position: sticky;
 		transition: width transitions.$Header-border-scroll-start;

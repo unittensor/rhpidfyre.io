@@ -1,13 +1,18 @@
+@mixin RegisterNewFont($Name, $size, $weight) {
+	font-family: $Name;
 
-
-@mixin set($face: null, $size: null, $weight: null) {
-	@if ($face != null) {
-		font-family: $face;
-	}
 	@if ($size != null) {
 		font-size: $size;
 	}
 	@if ($weight != null) {
 		font-weight: $weight;
 	}
+}
+
+@mixin Montserrat($size: null, $weight: null) {
+	@include RegisterNewFont("Montserrat", $size, $weight)
+}
+
+@mixin OpenSans($size: null, $weight: null) {
+	@include RegisterNewFont("Open Sans", $size, $weight)
 }
