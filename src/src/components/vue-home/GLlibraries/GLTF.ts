@@ -7,9 +7,7 @@ type Preload = Mesh | null
 export type GLTFModels = {[x: string]: Preload}
 
 const Cached: GLTFModels = {
-	rhpidfyreio: null,
-	LaTeX_Sum: null,
-	LaTeX_Power: null
+	rhpidfyreio: null
 }
 
 const GLTF_Constructor = new GLTFLoader() 

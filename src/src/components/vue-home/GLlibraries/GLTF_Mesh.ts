@@ -9,9 +9,7 @@ type GLTFModelName = string
 type MeshInstances = {[x: string]: Promise<Msh>}
 
 const Instances: GLTFModels = {
-    rhpidfyreio: null,
-    LaTeX_Sum: null,
-	LaTeX_Power: null
+    rhpidfyreio: null
 }
 
 const GLTF_Model = async (Name: GLTFModelName): Promise<Msh> => {
@@ -21,9 +19,7 @@ const GLTF_Model = async (Name: GLTFModelName): Promise<Msh> => {
 }
 
 const MeshInstance: MeshInstances = {
-	rhpidfyreio_compile: GLTF_Model("rhpidfyreio"),
-	LaTeX_Sum_compile: GLTF_Model("LaTeX_Sum"),
-	LaTeX_Power_compile: GLTF_Model("LaTeX_Power")
+	rhpidfyreio_compile: GLTF_Model("rhpidfyreio")
 }
 
 export default MeshInstance

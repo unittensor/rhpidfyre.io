@@ -16,20 +16,6 @@ const ClusterLoad_GLTF = (Scene: THREE.Scene, CameraVec: CameraPosition): void =
 		rhpidfyreio_Mesh.rotation.x = Up
 		Scene.add(rhpidfyreio_Mesh)
 	})
-
-	//Power
-	MeshInstance.LaTeX_Power_compile.then((LaTeX_Power: THREE.Mesh) => {
-		LaTeX_Power.position.set(CameraVec.x-3.5, CameraVec.y-.2, CameraVec.z-3)
-		LaTeX_Power.rotation.x = Up
-		Scene.add(LaTeX_Power)
-	})
-
-	//Summation
-	MeshInstance.LaTeX_Sum_compile.then((LaTeX_Sum: THREE.Mesh) => {
-		LaTeX_Sum.position.set(CameraVec.x-3.5, CameraVec.y-.2, CameraVec.z-3)
-		LaTeX_Sum.rotation.x = Up
-		Scene.add(LaTeX_Sum)
-	})
 }
 
 const WebGL_Properties = class {
@@ -61,7 +47,7 @@ const WebGL = class extends WebGL_Properties {
 	}
 
 	public Mount(): void {
-		let rhpidfyreio_pos = new Vec3(2,.2).add(new Vec3(1.9488622070364956, 4.0372155517591235, -3)) //heh..
+		let rhpidfyreio_pos = new Vec3(2.2,.2).add(new Vec3(1.9488622070364956, 4.0372155517591235, -3)) //heh..
 		
 		ClusterLoad_GLTF(WebGL.Scene, WebGL.Camera.position)
 
