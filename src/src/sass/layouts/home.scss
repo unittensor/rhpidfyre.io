@@ -1,5 +1,23 @@
 @use "../mixins/layout";
+@use "../mixins/fonts";
 
 :global(main) {
 	@include layout.grid(center);
 }
+
+.h12-container {
+	h1 {
+		@include fonts.Montserrat(2.5rem);
+
+		margin-bottom: .5rem;
+		color: var(--text-header1-color);
+	}
+
+	h2 {
+		@include fonts.OpenSans(1.5rem);
+
+		margin-top: 1rem;
+		color: var(--text-header2-color);
+	}
+}
+

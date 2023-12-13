@@ -9,6 +9,7 @@ interface Links {
 }
 
 const {Context, Description} = Astro.props
+const ContextTitle: string = `rhpidfyre.io | ${Context}`
 
 export const GitHubLinks: Links = {
 	URL: "https://github.com/interpreterK",
@@ -22,8 +23,8 @@ export const GitHubLinks: Links = {
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 		<meta name="generator" content={Astro.generator}/>
-		<meta name="description" content={Description ? Description : `rhpidfyre.io | ${Context}`}/>
-		<title>{`rhpidfyre.io | ${Context}`}</title>
+		<meta name="description" content={Description ? Description : ContextTitle}/>
+		<title>{ContextTitle}</title>
 		<link rel="icon" type="image/x-icon" href={GitHubLinks.ProfilePicture}>
 	</head>
 	<body>
@@ -45,22 +46,20 @@ export const GitHubLinks: Links = {
 		margin: 0;
 		padding: 0;
 		background-color: var(--main-theme_primary);
-
-		:is(h1, h2, p, button) {
-			font-family:
-				-apple-system,
-				BlinkMacSystemFont,
-				avenir next,
-				avenir,
-				segoe ui,
-				helvetica neue,
-				helvetica,
-				Cantarell,
-				Ubuntu,
-				roboto,
-				noto,
-				arial,
-				sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			BlinkMacSystemFont,
+			avenir next,
+			avenir,
+			segoe ui,
+			helvetica neue,
+			helvetica,
+			Cantarell,
+			Ubuntu,
+			roboto,
+			noto,
+			arial,
+			sans-serif;
 		}
-	}
 </style>

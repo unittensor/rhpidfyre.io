@@ -43,11 +43,11 @@ const WebGL = class extends WebGL_Properties {
 			alpha: true
 		})
 		WebGL.Scene = new THREE.Scene()
-		WebGL.Camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, .1, 1000)
+		WebGL.Camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, .1, 1000)
 	}
 
 	public Mount(): void {
-		let rhpidfyreio_pos = new Vec3(2.2,.2).add(new Vec3(1.9488622070364956, 4.0372155517591235, -3)) //heh..
+		let rhpidfyreio_pos = new Vec3(2.3,.2).add(new Vec3(1.9488622070364956, 4.0372155517591235, -3)) //heh..
 		
 		ClusterLoad_GLTF(WebGL.Scene, WebGL.Camera.position)
 
