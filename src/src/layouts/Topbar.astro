@@ -4,14 +4,14 @@ interface Props {
 }
 
 import TopbarButton from "../components/TopbarButton.astro";
+
 const {CurrentPage} = Astro.props
 ---
 
 <header>
-	<TopbarButton Text="Home" Active={(CurrentPage == "Home").toString()}/>
-	<TopbarButton Text="About" Active={(CurrentPage == "About").toString()}/>
-	<TopbarButton Text="Projects" Active={(CurrentPage == "Projects").toString()}/>
-	<TopbarButton Text="Servers" Active={(CurrentPage == "Servers").toString()}/>
+	<TopbarButton Text="Home" PageLink="./" Active={(CurrentPage == "Home").toString()}/>
+	<TopbarButton Text="Projects" PageLink="/projects" Active={(CurrentPage == "Projects").toString()}/>
+	<TopbarButton Text="Servers" PageLink="/servers" Active={(CurrentPage == "Servers").toString()}/>
 </header>
 <div id="header-scrolling"></div>
 
