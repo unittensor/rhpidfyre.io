@@ -1,0 +1,21 @@
+{
+  "name": "eminent-equinox",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.7.0",
+    "astro": "^4.11.5",
+    "autoprefixer": "^10.4.19",
+    "sass": "^1.77.6",
+    "scss": "^0.2.4",
+    "typescript": "^5.5.3",
+    "vue": "^3.4.31"
+  }
+}

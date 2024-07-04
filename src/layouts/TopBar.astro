@@ -1,0 +1,84 @@
+---
+const {ActivePage} = Astro.props
+const enum Pages {
+    Home,
+    Blog,
+    Videos,
+    Servers
+}
+
+
+---
+
+<header>
+	<div class="website-branding-container">
+		<img src="/icon1024.png" alt="Website Icon" width="50">
+		<a href="">
+			<h1>rhpidfyre.io</h1>
+		</a>
+	</div>
+	<div class="website-nav-container">
+		<button data-active=false>Home</button>
+		<button data-active=false>Blog</button>
+		<button data-active=false>Videos</button>
+		<button data-active=false>Servers</button>
+	</div>
+</header>
+
+<style lang="scss">
+	.website-branding-container {
+		display: flex;
+		justify-content: space-evenly;
+		align-items: center;
+		width: 300px;
+		height: 5rem;
+	}
+
+	.website-nav-container {
+		display: flex;
+		align-items: center;
+		justify-content: right;
+		gap: 10px;
+		margin-right: 50px;
+
+		> button {
+		    font-size: 1rem;
+			font-family: "Montserrat";
+    		background-color: transparent;
+    		border: 0;
+    		cursor: pointer;
+
+            &:hover {
+
+            }
+		}
+	}
+
+	h1 {
+		font-family: "Montserrat";
+		font-weight: bold;
+	}
+
+	a {
+		text-decoration: none;
+		color: white;
+
+		&:link, &:visited, &:active {
+			color: white
+		}
+	}
+
+	header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		background-color: var(--header-color);
+		border-bottom: 6px solid var(--header-border-color);
+		height: 90px;
+	}
+
+	img {
+		user-select: none;
+		pointer-events: none;
+	}
+</style>
