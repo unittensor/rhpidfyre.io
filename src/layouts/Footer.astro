@@ -1,0 +1,48 @@
+---
+
+---
+
+<footer>
+    <div class="footer-details">
+        <p>2024 &copy; <a href="https://github.com/unittensor" target="_blank">unittensor</a></p>
+        <p><a href="https://astro.build/" target="_blank">{Astro.generator}</a></p>
+    </div>
+</footer>
+
+<style lang="scss">
+    $footer-height: 80px;
+
+    .footer-details {
+        display: grid;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        margin-top: 10px;
+        height: calc($footer-height / 2);
+        width: inherit
+    }
+
+    p {
+        color: rgb(150,150,150);
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+
+	a {
+		color: rgb(150,150,150);
+
+		&:link, &:visited, &:active {
+			color: rgb(150,150,150)
+		}
+	}
+
+    footer {
+        display: flex;
+        justify-content: center;
+        background-color: var(--footer-color);
+		border-top: 3px solid var(--footer-border-color);
+		width: 100vw;
+		height: $footer-height
+    }
+</style>

@@ -1,55 +1,65 @@
 ---
 const {ActivePage} = Astro.props
-const enum Pages {
-    Home,
-    Blog,
-    Videos,
-    Servers
-}
-
-
+const Buttons: string[] = [
+    "Home",
+    "Blog",
+    "Videos",
+    "Servers"
+]
 ---
 
 <header>
 	<div class="website-branding-container">
 		<img src="/icon1024.png" alt="Website Icon" width="50">
-		<a href="">
+		<a href="/index/">
 			<h1>rhpidfyre.io</h1>
 		</a>
 	</div>
 	<div class="website-nav-container">
-		<button data-active=false>Home</button>
-		<button data-active=false>Blog</button>
-		<button data-active=false>Videos</button>
-		<button data-active=false>Servers</button>
+		{Buttons.map((ButtonName) =>
+		   <a href=`/${ButtonName == ActivePage ? "#" : (ActivePage == "Home" ? "index" : ActivePage)}/`>
+				{ButtonName == ActivePage ? <button data-active>{ButtonName}</button> : <button>{ButtonName}</button>}
+		   </a>
+		)}
 	</div>
 </header>
 
 <style lang="scss">
+    $header-height: 80px;
+    $button-hover-time: .3s;
+
 	.website-branding-container {
 		display: flex;
 		justify-content: space-evenly;
 		align-items: center;
 		width: 300px;
 		height: 5rem;
+		margin-left: 15px;
 	}
 
 	.website-nav-container {
 		display: flex;
 		align-items: center;
 		justify-content: right;
-		gap: 10px;
+		gap: 25px;
 		margin-right: 50px;
 
-		> button {
-		    font-size: 1rem;
+		button {
+			color: hsl(0, 0%, 50%);
+		    font-size: 1.1rem;
 			font-family: "Montserrat";
     		background-color: transparent;
     		border: 0;
     		cursor: pointer;
+     	    transition: color $button-hover-time;
 
             &:hover {
+                color: white;
+            	transition: color $button-hover-time;
+            }
 
+            &[data-active] {
+            	color: white
             }
 		}
 	}
@@ -73,8 +83,8 @@ const enum Pages {
 		align-items: center;
 		justify-content: space-between;
 		background-color: var(--header-color);
-		border-bottom: 6px solid var(--header-border-color);
-		height: 90px;
+		border-bottom: 5px solid var(--header-border-color);
+		height: $header-height;
 	}
 
 	img {
