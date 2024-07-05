@@ -1,20 +1,14 @@
 ---
-import WebPage from "../layouts/WebPage.astro";
-import TopBar from "../layouts/TopBar.astro";
-import Footer from "../layouts/Footer.astro"
-
-const ActivePage = "Home"
+import CompleteWebPage from "../components/CompleteWebPage.astro";
+import {WebPages} from "../layouts/WebPage.astro"
 ---
 
-<WebPage Title={ActivePage}>
-    <TopBar ActivePage={ActivePage}/>
-    <main>
-        <div class="text-section text-section-header">
-            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Animi unde rem praesentium dolore quia fuga nihil ex. Dolore nobis sit quae perferendis quo quasi a! Facilis placeat id totam sit et impedit, deserunt fugit quos ab exercitationem velit nesciunt aut voluptatum numquam quidem sequi, reprehenderit sed labore neque explicabo rerum? Unde quaerat perferendis veritatis deleniti, laudantium ipsum ullam quidem. Similique sint numquam dolorum architecto quisquam aliquam amet quod possimus dolorem nisi provident, voluptatum recusandae unde voluptates quis quaerat sunt corporis? Sunt quo impedit veniam maxime ad placeat architecto labore error ut quae, amet molestiae eos, consequuntur non iste corrupti, quasi veritatis deserunt dolor aliquid! Magnam cupiditate earum dignissimos voluptates, ex officiis animi pariatur in deleniti voluptatem tenetur nesciunt iste doloremque ullam nulla eos quidem asperiores enim eaque beatae?</p>
-        </div>
-    </main>
-    <Footer/>
-</WebPage>
+<CompleteWebPage Name={WebPages.Home}>
+    <div class="text-section text-section-header">
+        <h1>Welcome</h1>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Animi unde rem praesentium dolore quia fuga nihil ex. Dolore nobis sit quae perferendis quo quasi a! Facilis placeat id totam sit et impedit, deserunt fugit quos ab exercitationem velit nesciunt aut voluptatum numquam quidem sequi, reprehenderit sed labore neque explicabo rerum? Unde quaerat perferendis veritatis deleniti, laudantium ipsum ullam quidem. Similique sint numquam dolorum architecto quisquam aliquam amet quod possimus dolorem nisi provident, voluptatum recusandae unde voluptates quis quaerat sunt corporis? Sunt quo impedit veniam maxime ad placeat architecto labore error ut quae, amet molestiae eos, consequuntur non iste corrupti, quasi veritatis deserunt dolor aliquid! Magnam cupiditate earum dignissimos voluptates, ex officiis animi pariatur in deleniti voluptatem tenetur nesciunt iste doloremque ullam nulla eos quidem asperiores enim eaque beatae?</p>
+    </div>
+</CompleteWebPage>
 
 <style lang="scss">
     .text-section {
@@ -26,12 +20,6 @@ const ActivePage = "Home"
 
     .text-section-header {
         margin-top: 30px;
-    }
-
-    main {
-        max-width: 97vw;
-        margin-inline: auto;
-        height: 100vh;
-        background-color: var(--webpage-color);
+        padding: 0 10px 0 10px;
     }
 </style>

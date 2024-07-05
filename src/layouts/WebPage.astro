@@ -1,13 +1,20 @@
 ---
-const {Title} = Astro.props;
+import Meta from "../components/Meta.astro"
+
+const {Title} = Astro.props
+
+export const enum WebPages {
+    Home = "Home",
+    Blog = "Blog",
+    Videos = "Videos",
+    Servers = "Servers"
+}
 ---
 
 <html lang="en">
     <head>
-        <meta charset="utf-8"/>
+        <Meta/>
         <link rel="icon" type="image/x-icon" href="/icon.png"/>
-        <meta name="viewport" content="width=device-width"/>
-        <meta name="generator" content={Astro.generator}/>
         <title>{`rhpidfyre.io | ${Title}`}</title>
     </head>
     <body>
@@ -30,7 +37,7 @@ const {Title} = Astro.props;
             --footer-color:        rgb(30,30,30);
             --footer-border-color: rgb(55,55,55);
             --text-section:        rgb(15,15,15);
-            --text-section-border: rgb(100,100,100)
+            --text-section-border:   rgb(100,100,100)
         }
     }
 

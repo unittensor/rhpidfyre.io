@@ -1,0 +1,28 @@
+---
+import WebPage, {WebPages} from "../layouts/WebPage.astro";
+
+import TopBar from "../layouts/TopBar.astro";
+import Footer from "../layouts/Footer.astro"
+
+interface Props {
+    Name: WebPages
+}
+const {Name} = Astro.props
+---
+
+<WebPage Title={Name}>
+    <TopBar ActivePage={Name}/>
+    <main>
+        <slot/>
+    </main>
+    <Footer/>
+</WebPage>
+
+<style lang="scss">
+    main {
+        max-width: 97vw;
+        margin-inline: auto;
+        height: 100vh;
+        background-color: var(--webpage-color);
+    }
+</style>
