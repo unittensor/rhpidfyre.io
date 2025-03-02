@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width"/>
+	<link rel="icon" type="image/png" href="/logo.png"/>
+	<link rel="stylesheet" href="./scss/global.scss"/>
+	<title>rhpidfyre.io</title>
+</head>
+<body>
+	<header>
+		<%- inlineHtml("header") %>
+	</header>
+	<main>
+		<%- inlineHtml("motd") %>
+	</main>
+	<footer>
+		<%- inlineHtml("footer") %>
+	</footer>
+	<script type="module" src="./rt/emulator/terminal.ts"></script>
+</body>
+</html>
