@@ -4,13 +4,13 @@ import entry_search from "./index"
 
 type Files<T> = Entry<T>[]
 
-interface EntryCollectionManipulate {
-	pop: <T extends Entry<T>>(file_name: string) => Entry<T> | undefined,
-	get: <T extends Entry<T>>(file_name: string) => Entry<T> | undefined
-	push: <T extends Entry<T>>(entry: Entry<T>) => boolean,
+interface EntryCollectionManipulate<T extends Entry<T>> {
+	pop: (file_name: string) => Entry<T> | undefined,
+	get: (file_name: string) => Entry<T> | undefined
+	push: (entry: Entry<T>) => boolean,
 	sort: () => void,
 }
-interface EntryCollection<T> extends EntryCollectionManipulate {
+interface EntryCollection<T extends Entry<T>> extends EntryCollectionManipulate<T> {
 	readonly inner: Files<T>
 }
 
@@ -18,7 +18,7 @@ function sort<E extends Entry<E>>(self: EntryCollection<E>) {
 	self.inner.sort((a,z) => a.name.localeCompare(z.name))
 }
 
-function push<E extends Entry<E>, T extends Entry<T>>(self: EntryCollection<E>, entry: Entry<T>) {
+function push<E extends Entry<E>>(self: EntryCollection<E>, entry: Entry<E>) {
 	const no_duplicates = entry_search(self.inner, entry.name)
 	if (!no_duplicates) {
 		self.push(entry)
