@@ -1,15 +1,15 @@
 import { type Entry } from "./main"
 import { type Files } from "./collection"
 
-interface SearchResult<T> {
+interface Wrap<T extends Entry<T>> {
 	readonly result: T,
 	readonly index: number
 }
-function wrap_result<T>(result: T, index: number): SearchResult<T> {
+function wrap_result<T extends Entry<T>>(result: T, index: number): Wrap<T> {
 	return { result: result, index: index }
 }
 
-export default function entry_search<T>(cloned_file_collection: Files<T>, file_name: string): SearchResult<Entry<T>> | undefined {
+export default function entry_search<T extends Entry<T>>(cloned_file_collection: Files<T>, file_name: string): Wrap<Entry<T>> | undefined {
 	let start = 0
 	let end = cloned_file_collection.length-1
 	while (start<=end) {
