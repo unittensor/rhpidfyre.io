@@ -26,7 +26,7 @@ interface EntryFile<T> extends Entry {
 
 interface EntryCollection<T extends Entry> extends EntryCollectionInner<T> {
 	pop: (file_name: string) => T | undefined,
-	get: (file_name: string) => T | undefined
+	find: (file_name: string) => T | undefined
 	push: <E extends Entry>(entry: E) => boolean,
 	sort: () => void,
 }
@@ -51,7 +51,7 @@ function push<E extends Entry>(self: EntryCollection<E>, entry: Entry) {
 	return false
 }
 
-function get<E extends Entry>(self: EntryCollection<E>, file_name: string) {
+function find<E extends Entry>(self: EntryCollection<E>, file_name: string) {
 	const file_search = entry_search(self.collection, file_name)
 	return file_search ? file_search.result : undefined
 }
@@ -89,8 +89,8 @@ rfwfs.new_collection = function<T extends Entry>(collection: T[]): EntryCollecti
 	const collection_trait = { collection: collection } as EntryCollection<T>
 	collection_trait.sort = function()          { return sort(this) }
 	collection_trait.push = function(entry)     { return push(this, entry) }
-	collection_trait.get  = function(file_name) { return get(this, file_name) }
 	collection_trait.pop  = function(file_name) { return pop(this, file_name) }
+	collection_trait.find  = function(file_name) { return find(this, file_name) }
 	return collection_trait
 }
 
