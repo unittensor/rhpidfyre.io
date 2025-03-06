@@ -87,10 +87,11 @@ rfwfs.new_entry = function(name, permissions, timestamp, inner) {
 
 rfwfs.new_collection = function<T extends Entry>(collection: T[]): EntryCollection<T> {
 	const collection_trait = { collection: collection } as EntryCollection<T>
-	collection_trait.sort = function()          { return sort(this) }
-	collection_trait.push = function(entry)     { return push(this, entry) }
-	collection_trait.pop  = function(file_name) { return pop(this, file_name) }
+	collection_trait.sort = function()           { return sort(this) }
+	collection_trait.push = function(entry)      { return push(this, entry) }
 	collection_trait.find  = function(file_name) { return find(this, file_name) }
+	collection_trait.pop  = function(file_name)  { return pop(this, file_name) }
+	collection_trait.sort()
 	return collection_trait
 }
 
