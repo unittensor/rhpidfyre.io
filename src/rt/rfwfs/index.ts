@@ -1,11 +1,11 @@
 import { type Entry } from "./main"
 import { type Files } from "./collection"
 
-interface Wrap<T extends Entry<T>> {
+interface Wrap<T> {
 	readonly result: T,
 	readonly index: number
 }
-function wrap_result<T extends Entry<T>>(result: T, index: number): Wrap<T> {
+function wrap_result<T>(result: T, index: number): Wrap<T> {
 	return { result: result, index: index }
 }
 

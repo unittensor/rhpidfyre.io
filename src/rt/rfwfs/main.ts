@@ -11,7 +11,7 @@ const enum Permissions {
 	none
 }
 
-interface Entry<T> {
+interface Entry<T extends Entry<T>> {
 	readonly name: string,
 	readonly type: EntryType,
 	readonly inner: T,

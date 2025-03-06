@@ -2,7 +2,7 @@ import { type Entry } from "./main"
 
 import entry_search from "./index"
 
-type Files<T> = Entry<T>[]
+type Files<T extends Entry<T>> = Entry<T>[]
 
 interface EntryCollectionManipulate<T extends Entry<T>> {
 	pop: (file_name: string) => Entry<T> | undefined,
