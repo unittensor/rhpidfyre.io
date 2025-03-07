@@ -28,7 +28,6 @@ interface EntryCollectionInner<T extends Entry> extends Entry {
 interface EntryFile<T> extends Entry {
 	inner: T
 }
-
 interface EntryCollection<T extends Entry> extends EntryCollectionInner<T> {
 	pop: (file_name: string) => T | undefined,
 	find: (file_name: string) => T | undefined
@@ -38,8 +37,10 @@ interface EntryCollection<T extends Entry> extends EntryCollectionInner<T> {
 interface Rfwfs {
 	is_dir: <T extends Entry>(entry: T) => boolean,
 	is_file: <T extends Entry>(entry: T) => boolean,
-	new_entry: <T>(name: string, permissions: Permissions, timestamp: number, inner: T) => EntryFile<T>,
-	new_collection: <T extends Entry>(inner: T[]) => EntryCollection<T>,
+	entry: <T>(name: string, permissions: Permissions, timestamp: number, inner: T) => EntryFile<T>,
+	collection: <T extends Entry>(inner: T[]) => EntryCollection<T>,
+}
+
 function readable<E extends Entry>(self: EntryCollection<E>): boolean {
 	return self.permissions === Permissions.rw || self.permissions === Permissions.r
 }
@@ -89,7 +90,7 @@ rfwfs.is_file = function(entry) {
 	return entry.type === EntryType.File
 }
 
-rfwfs.new_entry = function(name, permissions, timestamp, inner) {
+rfwfs.entry = function(name, permissions, timestamp, inner) {
 	return {
 		name: name,
 		type: typeof inner === "object" ? EntryType.Directory : EntryType.File,
@@ -99,12 +100,12 @@ rfwfs.new_entry = function(name, permissions, timestamp, inner) {
 	}
 }
 
-rfwfs.new_collection = function<T extends Entry>(collection: T[]): EntryCollection<T> {
+rfwfs.collection = function<T extends Entry>(collection: T[]): EntryCollection<T> {
 	const collection_trait = { collection: collection } as EntryCollection<T>
-	collection_trait.sort = function()           { return sort(this) }
-	collection_trait.push = function(entry)      { return push(this, entry) }
-	collection_trait.find  = function(file_name) { return find(this, file_name) }
-	collection_trait.pop  = function(file_name)  { return pop(this, file_name) }
+	collection_trait.pop  = function(file_name) { return pop(this, file_name) }
+	collection_trait.find = function(file_name) { return find(this, file_name) }
+	collection_trait.push = function(entry)     { return push(this, entry) }
+	collection_trait.sort = function()          { return sort(this) }
 	collection_trait.sort()
 	return collection_trait
 }
