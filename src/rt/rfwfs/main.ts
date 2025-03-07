@@ -10,6 +10,11 @@ const enum Permissions {
 	rw,
 	none
 }
+const enum PushStatus {
+	Ok,
+	Duplicate,
+	Denied,
+}
 
 interface Entry {
 	readonly name: string,
@@ -27,7 +32,7 @@ interface EntryFile<T> extends Entry {
 interface EntryCollection<T extends Entry> extends EntryCollectionInner<T> {
 	pop: (file_name: string) => T | undefined,
 	find: (file_name: string) => T | undefined
-	push: <E extends Entry>(entry: E) => boolean,
+	push: (entry: Entry) => PushStatus,
 	sort: () => void,
 }
 interface Rfwfs {
@@ -35,20 +40,29 @@ interface Rfwfs {
 	is_file: <T extends Entry>(entry: T) => boolean,
 	new_entry: <T>(name: string, permissions: Permissions, timestamp: number, inner: T) => EntryFile<T>,
 	new_collection: <T extends Entry>(inner: T[]) => EntryCollection<T>,
+function readable<E extends Entry>(self: EntryCollection<E>): boolean {
+	return self.permissions === Permissions.rw || self.permissions === Permissions.r
+}
+
+function writable<E extends Entry>(self: EntryCollection<E>): boolean {
+	return self.permissions === Permissions.rw || self.permissions === Permissions.w
 }
 
 function sort<E extends Entry>(self: EntryCollection<E>) {
 	self.collection.sort((a,z) => a.name.localeCompare(z.name))
 }
 
-function push<E extends Entry>(self: EntryCollection<E>, entry: Entry) {
-	const no_duplicates = entry_search(self.collection, entry.name)
-	if (!no_duplicates) {
-		self.push(entry)
-		self.sort()
-		return true
+function push<E extends Entry>(self: EntryCollection<E>, entry: Entry): PushStatus {
+	if (writable(self)) {
+		const no_duplicates = entry_search(self.collection, entry.name)
+		if (!no_duplicates) {
+			self.push(entry)
+			self.sort()
+			return PushStatus.Ok
+		}
+		return PushStatus.Duplicate
 	}
-	return false
+	return PushStatus.Denied
 }
 
 function find<E extends Entry>(self: EntryCollection<E>, file_name: string) {
