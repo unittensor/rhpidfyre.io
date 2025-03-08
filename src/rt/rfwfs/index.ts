@@ -1,14 +1,7 @@
-import { type Entry } from "./main"
+import { type Entry } from "./types/entry"
+import { wrap_bsearch, type WrapBSearch } from "./wrap"
 
-interface Wrap<T> {
-	readonly result: T,
-	readonly index: number
-}
-function wrap_result<T>(result: T, index: number): Wrap<T> {
-	return { result: result, index: index }
-}
-
-export default function entry_search<T extends Entry>(entry_collection: T[], file_name: string): Wrap<T> | undefined {
+export default function directory_search<T extends Entry>(entry_collection: T[], file_name: string): WrapBSearch<T> | undefined {
 	let start = 0
 	let end = entry_collection.length-1
 	while (start<=end) {
@@ -16,7 +9,7 @@ export default function entry_search<T extends Entry>(entry_collection: T[], fil
 		const median_name = entry_collection[median].name
 
 		if (median_name === file_name) {
-			return wrap_result(entry_collection[median], median)
+			return wrap_bsearch(median, entry_collection[median])
 		} else if (median_name<file_name) {
 			start = median+1
 		} else {

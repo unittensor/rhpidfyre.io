@@ -1,83 +1,93 @@
-import entry_search from "./index"
+import { EntryType, PushStatus, ReadStatus, Permissions } from "./enum"
+import { Entry, EntryCollection, FileInner, EntryFile, EntryCollectionManipulate, EntryFileInner } from "./types/entry"
 
-const enum EntryType {
-	Directory,
-	File
-}
-const enum Permissions {
-	r,
-	w,
-	rw,
-	none
-}
-const enum PushStatus {
-	Ok,
-	Duplicate,
-	Denied,
-}
+import directory_search from "./index"
+import { wrap_entry, wrap_none, WrapResultEntry, WrapResultNone } from "./wrap"
 
-interface Entry {
-	readonly name: string,
-	readonly type: EntryType,
-	readonly timestamp: number,
-	readonly permissions: Permissions,
-}
-interface EntryCollectionInner<T extends Entry> extends Entry {
-	readonly collection: T[],
-}
-interface EntryFile<T> extends Entry {
-	inner: T
-}
-interface EntryCollection<T extends Entry> extends EntryCollectionInner<T> {
-	pop: (file_name: string) => T | undefined,
-	find: (file_name: string) => T | undefined
-	push: (entry: Entry) => PushStatus,
-	sort: () => void,
-}
 interface Rfwfs {
-	is_dir: <T extends Entry>(entry: T) => boolean,
+	directory: <T extends Entry>(name: string, permissions: Permissions, timestamp: number, inner_default: T[]) => EntryCollection<T>,
 	is_file: <T extends Entry>(entry: T) => boolean,
-	entry: <T>(name: string, permissions: Permissions, timestamp: number, inner: T) => EntryFile<T>,
-	collection: <T extends Entry>(inner: T[]) => EntryCollection<T>,
+	is_dir: <T extends Entry>(entry: T) => boolean,
+	file: (name: string, permissions: Permissions, timestamp: number, inner_default: FileInner) => EntryFile,
 }
 
-function readable<E extends Entry>(self: EntryCollection<E>): boolean {
-	return self.permissions === Permissions.rw || self.permissions === Permissions.r
+function read_write_access(permissions: Permissions): boolean {
+	return permissions === Permissions.rw
+}
+function read_access(permissions: Permissions): boolean {
+	return read_write_access(permissions) || permissions === Permissions.r
+}
+function write_access(permissions: Permissions): boolean {
+	return read_write_access(permissions) || permissions === Permissions.w
 }
 
-function writable<E extends Entry>(self: EntryCollection<E>): boolean {
-	return self.permissions === Permissions.rw || self.permissions === Permissions.w
+function directory_sort<E extends Entry>(self: EntryCollectionManipulate<E>) {
+	self.__body.sort((a,z) => a.name.localeCompare(z.name))
 }
 
-function sort<E extends Entry>(self: EntryCollection<E>) {
-	self.collection.sort((a,z) => a.name.localeCompare(z.name))
-}
-
-function push<E extends Entry>(self: EntryCollection<E>, entry: Entry): PushStatus {
-	if (writable(self)) {
-		const no_duplicates = entry_search(self.collection, entry.name)
+function directory_push<E extends Entry>(self: EntryCollection<E>, entry: E): WrapResultNone<PushStatus> {
+	if (write_access(self.permissions)) {
+		const no_duplicates = directory_search(self.inner.__body, entry.name)
 		if (!no_duplicates) {
-			self.push(entry)
-			self.sort()
-			return PushStatus.Ok
+			self.inner.__body.push(entry)
+			self.inner.__body.sort()
+			return wrap_none(PushStatus.Ok)
 		}
-		return PushStatus.Duplicate
+		return wrap_none(PushStatus.Duplicate)
 	}
-	return PushStatus.Denied
+	return wrap_none(PushStatus.Denied)
 }
 
-function find<E extends Entry>(self: EntryCollection<E>, file_name: string) {
-	const file_search = entry_search(self.collection, file_name)
-	return file_search ? file_search.result : undefined
+function directory_find<E extends Entry>(self: EntryCollection<E>, file_name: string): WrapResultEntry<E, ReadStatus> {
+	if (read_access(self.permissions)) {
+		const file_search = directory_search(self.inner.__body, file_name)
+		if (file_search) {
+			return wrap_entry(ReadStatus.Ok, file_search.result)
+		}
+		return wrap_entry(ReadStatus.NotFound)
+	}
+	return wrap_entry(ReadStatus.Denied)
 }
 
-function pop<E extends Entry>(self: EntryCollection<E>, file_name: string) {
-	const file_search = entry_search(self.collection, file_name)
-	if (file_search) {
-		self.collection.splice(file_search.index, 1)
-		return file_search.result
+function directory_pop<E extends Entry>(self: EntryCollection<E>, file_name: string): WrapResultEntry<E, ReadStatus> {
+	if (read_write_access(self.permissions)) {
+		const pop_find = directory_search(self.inner.__body, file_name)
+		if (pop_find) {
+			self.inner.__body.splice(pop_find.some, 1)
+			return wrap_entry(ReadStatus.Ok, pop_find.result)
+		}
+		return wrap_entry(ReadStatus.NotFound)
 	}
-	return undefined
+	return wrap_entry(ReadStatus.Denied)
+}
+
+function file_inner_read(self: EntryFileInner, permissions: Permissions): FileInner | undefined {
+	return read_access(permissions) ? self.__body : undefined
+}
+
+function file_inner_write(self: EntryFileInner, permissions: Permissions, item: FileInner): boolean {
+	if (write_access(permissions)) {
+		self.__body = item
+		return true
+	}
+	return false
+}
+
+function file_inner(permissions: Permissions, inner_default: FileInner): EntryFileInner {
+	const file_inner_trait = { __body: inner_default } as EntryFileInner
+	file_inner_trait.read  = function()     { return file_inner_read(this, permissions) }
+	file_inner_trait.write = function(item) { return file_inner_write(this, permissions, item) }
+	return file_inner_trait
+}
+
+function dir_inner<T extends Entry>(self: EntryCollection<T>, collection: T[]): EntryCollectionManipulate<T> {
+	const collection_trait = { __body: collection } as EntryCollectionManipulate<T>
+	collection_trait.pop  = function(file_name) { return directory_pop(self, file_name) }
+	collection_trait.find = function(file_name) { return directory_find(self, file_name) }
+	collection_trait.push = function(entry)     { return directory_push(self, entry) }
+	collection_trait.sort = function()          { return directory_sort(this) }
+	collection_trait.sort() //the default collection is automatically sorted on directory creation.
+	return collection_trait
 }
 
 const rfwfs = {} as Rfwfs
@@ -85,35 +95,27 @@ const rfwfs = {} as Rfwfs
 rfwfs.is_dir = function(entry) {
 	return entry.type === EntryType.Directory
 }
-
 rfwfs.is_file = function(entry) {
 	return entry.type === EntryType.File
 }
 
-rfwfs.entry = function(name, permissions, timestamp, inner) {
-	return {
-		name: name,
-		type: typeof inner === "object" ? EntryType.Directory : EntryType.File,
-		inner: inner,
-		timestamp: timestamp ? timestamp : (Date.now()/1000)|0,
-		permissions: permissions,
-	}
+rfwfs.file = function(name, permissions, timestamp, inner_default) {
+	const file = { type: EntryType.File } as EntryFile
+	file.permissions = permissions
+	file.timestamp = timestamp
+	file.inner = file_inner(permissions, inner_default)
+	file.name = name
+	file.hash = "0"
+	return file
 }
 
-rfwfs.collection = function<T extends Entry>(collection: T[]): EntryCollection<T> {
-	const collection_trait = { collection: collection } as EntryCollection<T>
-	collection_trait.pop  = function(file_name) { return pop(this, file_name) }
-	collection_trait.find = function(file_name) { return find(this, file_name) }
-	collection_trait.push = function(entry)     { return push(this, entry) }
-	collection_trait.sort = function()          { return sort(this) }
-	collection_trait.sort()
-	return collection_trait
+rfwfs.directory = function<T extends Entry>(name: string, permissions: Permissions, timestamp: number, inner_default: T[]): EntryCollection<T> {
+	const directory = { type: EntryType.Directory } as EntryCollection<T>
+	directory.permissions = permissions
+	directory.timestamp = timestamp
+	directory.inner = dir_inner(directory, inner_default)
+	directory.name = name
+	return directory
 }
 
 export default rfwfs
-export {
-	EntryType,
-	Permissions,
-	type EntryCollection,
-	type Entry,
-}
