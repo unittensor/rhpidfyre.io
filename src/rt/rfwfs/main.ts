@@ -24,6 +24,7 @@ interface EntryFile extends Entry {
 interface EntryCollection<T extends Entry> extends Entry {
 	inner: EntryCollectionManipulate<T>,
 }
+
 interface EntryCollectionManipulate<T extends Entry> {
 	__body: T[],
 	clone: (file_name: string) => WrapResultEntry<T, ReadStatus>
@@ -34,10 +35,10 @@ interface EntryCollectionManipulate<T extends Entry> {
 }
 
 interface Rfwfs {
-	directory: <T extends Entry>(default_name: string, permissions: Permissions, timestamp: number, inner_default?: T[]) => EntryCollection<T>,
+	directory: <T extends Entry>(default_name: string, permissions: Permissions, timestamp?: number, inner_default?: T[]) => EntryCollection<T>,
 	is_file: <T extends Entry>(entry: T) => boolean,
 	is_dir: <T extends Entry>(entry: T) => boolean,
-	file: (default_name: string, permissions: Permissions, timestamp: number, inner_default?: FileInner) => EntryFile,
+	file: (default_name: string, permissions: Permissions, timestamp?: number, inner_default?: FileInner) => EntryFile,
 }
 
 function read_write_access(permissions: Permissions): boolean {
@@ -143,17 +144,17 @@ rfwfs.is_file = function(entry) {
 rfwfs.file = function(default_name, permissions, timestamp, inner_default) {
 	const file = { type: EntryType.File } as EntryFile
 	file.permissions = permissions
-	file.timestamp = timestamp
+	file.timestamp = timestamp ? timestamp : (Date.now()/1000)|0
 	file.inner = file_inner(permissions, inner_default ? inner_default : "")
 	file.name = default_name
 	file.hash = "0"
 	return file
 }
 
-rfwfs.directory = function<T extends Entry>(default_name: string, permissions: Permissions, timestamp: number, inner_default?: T[]): EntryCollection<T> {
+rfwfs.directory = function<T extends Entry>(default_name: string, permissions: Permissions, timestamp?: number, inner_default?: T[]): EntryCollection<T> {
 	const directory = { type: EntryType.Directory } as EntryCollection<T>
 	directory.permissions = permissions
-	directory.timestamp = timestamp
+	directory.timestamp = timestamp ? timestamp : (Date.now()/1000)|0
 	directory.inner = dir_inner(directory, inner_default ? inner_default : [])
 	directory.name = default_name
 	return directory
