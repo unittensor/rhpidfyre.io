@@ -34,10 +34,10 @@ interface EntryCollectionManipulate<T extends Entry> {
 }
 
 interface Rfwfs {
-	directory: <T extends Entry>(name: string, permissions: Permissions, timestamp: number, inner_default: T[]) => EntryCollection<T>,
+	directory: <T extends Entry>(default_name: string, permissions: Permissions, timestamp: number, inner_default?: T[]) => EntryCollection<T>,
 	is_file: <T extends Entry>(entry: T) => boolean,
 	is_dir: <T extends Entry>(entry: T) => boolean,
-	file: (name: string, permissions: Permissions, timestamp: number, inner_default: FileInner) => EntryFile,
+	file: (default_name: string, permissions: Permissions, timestamp: number, inner_default?: FileInner) => EntryFile,
 }
 
 function read_write_access(permissions: Permissions): boolean {
@@ -90,6 +90,17 @@ function directory_pop<E extends Entry>(self: EntryCollection<E>, file_name: str
 	return wrap_entry(ReadStatus.Denied)
 }
 
+function directory_clone<E extends Entry>(self: EntryCollection<E>, file_name: string): WrapResultEntry<E, ReadStatus> {
+	if (read_write_access(self.permissions)) {
+		const clone_find = directory_search(self.inner.__body, file_name)
+		if (clone_find) {
+			return wrap_entry(ReadStatus.Ok, { ...clone_find.result })
+		}
+		return wrap_entry(ReadStatus.NotFound)
+	}
+	return wrap_entry(ReadStatus.Denied)
+}
+
 function file_inner_read(self: EntryFileInner, permissions: Permissions): FileInner | undefined {
 	return read_access(permissions) ? self.__body : undefined
 }
@@ -111,10 +122,11 @@ function file_inner(permissions: Permissions, inner_default: FileInner): EntryFi
 
 function dir_inner<T extends Entry>(self: EntryCollection<T>, collection: T[]): EntryCollectionManipulate<T> {
 	const collection_trait = { __body: collection } as EntryCollectionManipulate<T>
-	collection_trait.pop  = function(file_name) { return directory_pop(self, file_name) }
-	collection_trait.find = function(file_name) { return directory_find(self, file_name) }
-	collection_trait.push = function(entry)     { return directory_push(self, entry) }
-	collection_trait.sort = function()          { return directory_sort(this) }
+	collection_trait.clone = function(file_name) { return directory_clone(self, file_name) }
+	collection_trait.pop   = function(file_name) { return directory_pop(self, file_name) }
+	collection_trait.find  = function(file_name) { return directory_find(self, file_name) }
+	collection_trait.push  = function(entry)     { return directory_push(self, entry) }
+	collection_trait.sort  = function()          { return directory_sort(this) }
 	collection_trait.sort() //the default collection is automatically sorted on directory creation.
 	return collection_trait
 }
@@ -128,23 +140,31 @@ rfwfs.is_file = function(entry) {
 	return entry.type === EntryType.File
 }
 
-rfwfs.file = function(name, permissions, timestamp, inner_default) {
+rfwfs.file = function(default_name, permissions, timestamp, inner_default) {
 	const file = { type: EntryType.File } as EntryFile
 	file.permissions = permissions
 	file.timestamp = timestamp
-	file.inner = file_inner(permissions, inner_default)
-	file.name = name
+	file.inner = file_inner(permissions, inner_default ? inner_default : "")
+	file.name = default_name
 	file.hash = "0"
 	return file
 }
 
-rfwfs.directory = function<T extends Entry>(name: string, permissions: Permissions, timestamp: number, inner_default: T[]): EntryCollection<T> {
+rfwfs.directory = function<T extends Entry>(default_name: string, permissions: Permissions, timestamp: number, inner_default?: T[]): EntryCollection<T> {
 	const directory = { type: EntryType.Directory } as EntryCollection<T>
 	directory.permissions = permissions
 	directory.timestamp = timestamp
-	directory.inner = dir_inner(directory, inner_default)
-	directory.name = name
+	directory.inner = dir_inner(directory, inner_default ? inner_default : [])
+	directory.name = default_name
 	return directory
 }
 
 export default rfwfs
+export {
+	type FileInner,
+	type Entry,
+	type EntryFile,
+	type EntryFileInner,
+	type EntryCollection,
+	type EntryCollectionManipulate,
+}
