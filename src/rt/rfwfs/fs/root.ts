@@ -28,10 +28,14 @@ const home = rfwfs.directory("home", Permissions.r, time_now, [user])
 // ------------
 
 // ------------ root ------------
-const bin = rfwfs.directory("bin", Permissions.r, time_now)
+const bin  = rfwfs.directory("bin", Permissions.r, time_now)
+const vard = rfwfs.directory("var", Permissions.r, time_now)
+const etc  = rfwfs.directory("etc", Permissions.r, time_now)
 // ------------
 
 export default rfwfs.directory("/", Permissions.r, time_now, [
 	bin,
 	home,
+	vard,
+	etc,
 ])
