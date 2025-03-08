@@ -1,4 +1,4 @@
-import { type Entry } from "./types/entry"
+import { type Entry } from "./main"
 import { wrap_bsearch, type WrapBSearch } from "./wrap"
 
 export default function directory_search<T extends Entry>(entry_collection: T[], file_name: string): WrapBSearch<T> | undefined {

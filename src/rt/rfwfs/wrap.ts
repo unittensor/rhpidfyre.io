@@ -1,5 +1,7 @@
 import { Result } from "./enum"
-import { ConstEnum, Entry } from "./types/entry"
+import { type Entry } from "./main"
+
+type ConstEnum = number
 
 type WrapResultEntry<T extends Entry, U> = WrapResult<T | undefined, U>
 type WrapBSearch<T extends Entry> = WrapResult<T, number>
@@ -32,7 +34,7 @@ export {
 	wrap_entry,
 	wrap_none,
 	type WrapResultEntry,
-	type WrapBSearch,
 	type WrapResultNone,
+	type WrapBSearch,
 	type WrapResult,
 }

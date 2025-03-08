@@ -1,8 +1,37 @@
 import { EntryType, PushStatus, ReadStatus, Permissions } from "./enum"
-import { Entry, EntryCollection, FileInner, EntryFile, EntryCollectionManipulate, EntryFileInner } from "./types/entry"
+import { wrap_entry, wrap_none, WrapResultEntry, WrapResultNone } from "./wrap"
 
 import directory_search from "./index"
-import { wrap_entry, wrap_none, WrapResultEntry, WrapResultNone } from "./wrap"
+
+type FileInner = string | number
+
+interface Entry {
+	name: string,
+	timestamp: number,
+	permissions: Permissions,
+	//please do not change the inner values directly on entries or else there will be catastrophic consequences
+	readonly type: EntryType,
+}
+interface EntryFileInner {
+	__body: FileInner,
+	write: (item: FileInner) => boolean,
+	read: () => FileInner | undefined,
+}
+interface EntryFile extends Entry {
+	inner: EntryFileInner,
+	hash: string,
+}
+interface EntryCollection<T extends Entry> extends Entry {
+	inner: EntryCollectionManipulate<T>,
+}
+interface EntryCollectionManipulate<T extends Entry> {
+	__body: T[],
+	clone: (file_name: string) => WrapResultEntry<T, ReadStatus>
+	find: (file_name: string) => WrapResultEntry<T, ReadStatus>
+	push: (entry: Entry) => WrapResultNone<PushStatus>,
+	sort: () => void,
+	pop: (file_name: string) => WrapResultEntry<T, ReadStatus>,
+}
 
 interface Rfwfs {
 	directory: <T extends Entry>(name: string, permissions: Permissions, timestamp: number, inner_default: T[]) => EntryCollection<T>,
