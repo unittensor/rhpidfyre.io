@@ -1,12 +1,25 @@
+type ConstEnum = number
+
 const enum EntryType {
 	Directory,
-	File
+	Binary,
+	File,
 }
 const enum Permissions {
 	r,
 	w,
 	rw,
-	none
+	none,
+}
+const enum PermissionsBinary {
+	r,
+	w,
+	x,
+	rw,
+	rwx,
+	rx,
+	wx,
+	none,
 }
 const enum PushStatus {
 	Ok,
@@ -20,13 +33,15 @@ const enum ReadStatus {
 }
 const enum Result {
 	None,
-	Ok
+	Ok,
 }
 
 export {
-	EntryType,
+	type ConstEnum,
+	PermissionsBinary,
 	Permissions,
 	PushStatus,
 	ReadStatus,
+	EntryType,
 	Result,
 }
