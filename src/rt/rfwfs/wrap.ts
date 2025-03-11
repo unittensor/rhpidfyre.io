@@ -1,14 +1,14 @@
-import { Result } from "./enum"
+import { Result, type ConstEnum } from "./enum"
 import { type Entry } from "./main"
-
-type ConstEnum = number
 
 type WrapResultEntry<T extends Entry, U> = WrapResult<T | undefined, U>
 type WrapBSearch<T extends Entry> = WrapResult<T, number>
 type WrapResultNone<T> = WrapResult<Result.None, T>
 
 interface WrapResult<T, U> {
+	/** The resulting value if `U` is a success */
 	readonly result: T,
+	/** Represents some arbitrary extra value, usually a success status */
 	readonly some: U
 }
 
@@ -20,7 +20,7 @@ function wrap_bsearch<T extends Entry>(index: number, result: T): WrapBSearch<T>
 	return wrap(result, index)
 }
 
-function wrap_entry<U extends ConstEnum, T extends Entry>(status: U, result?: T): WrapResultEntry<T, U> {
+function wrap_entry<T extends ConstEnum, U extends Entry>(status: T, result?: U): WrapResultEntry<U, T> {
 	return wrap(result, status)
 }
 
