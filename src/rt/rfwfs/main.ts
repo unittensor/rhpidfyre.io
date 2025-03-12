@@ -63,7 +63,7 @@ function directory_sort<E extends Entry>(self: EntryCollectionManipulate<E>) {
 }
 
 function directory_push<E extends Entry>(self: EntryCollection<E>, entry: E): WrapResultNone<PushStatus> {
-	if (write_access(self.permissions)) {
+	if (read_write_access(self.permissions)) {
 		const no_duplicates = directory_search(self.inner.__inner, entry.name.read())
 		if (!no_duplicates) {
 			self.inner.__inner.push(entry)
@@ -76,7 +76,7 @@ function directory_push<E extends Entry>(self: EntryCollection<E>, entry: E): Wr
 }
 
 function directory_find<E extends Entry>(self: EntryCollection<E>, file_name: string): WrapResultEntry<E, ReadStatus> {
-	if (read_access(self.permissions)) {
+	if (read_write_access(self.permissions)) {
 		const file_search = directory_search(self.inner.__inner, file_name)
 		if (file_search) {
 			return wrap_entry(ReadStatus.Ok, file_search.result)
