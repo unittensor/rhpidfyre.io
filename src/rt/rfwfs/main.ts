@@ -7,7 +7,6 @@ import hash_table from "./hash"
 type FileInner = string | number
 type EntryFileInner = EntryValue<FileInner, FileInner | undefined>
 
-//please do not change the inner values directly on entries or else there will be catastrophic consequences
 interface EntryValue<T, U = T> {
 	__inner: T,
 	write: (value: T) => boolean,
@@ -58,85 +57,83 @@ function write_access<P extends ConstEnum>(permissions: P): boolean {
 	return read_write_access(permissions) || permissions === Permissions.w
 }
 
-function directory_sort<E extends Entry>(self: EntryCollectionManipulate<E>) {
-	self.__inner.sort((a,z) => a.name.read().localeCompare(z.name.read()))
-}
+class Inner<T> {
+	private inner: T;
 
-function directory_push<E extends Entry>(self: EntryCollection<E>, entry: E): WrapResultNone<PushStatus> {
-	if (read_write_access(self.permissions)) {
-		const no_duplicates = directory_search(self.inner.__inner, entry.name.read())
-		if (!no_duplicates) {
-			self.inner.__inner.push(entry)
-			self.inner.__inner.sort()
-			return wrap_none(PushStatus.Ok)
+	constructor(inner_default: T) {
+		this.inner = inner_default
+	}
+
+	public write<P extends ConstEnum, I extends T>(dyn_permissions: P, item: I): boolean {
+		if (write_access(dyn_permissions)) {
+			this.inner = item
+			return true
 		}
-		return wrap_none(PushStatus.Duplicate)
+		return false
 	}
-	return wrap_none(PushStatus.Denied)
+
+	public read<P extends ConstEnum>(dyn_permissions: P): T | undefined {
+		return read_access(dyn_permissions) ? this.inner : undefined
+	}
 }
 
-function directory_find<E extends Entry>(self: EntryCollection<E>, file_name: string): WrapResultEntry<E, ReadStatus> {
-	if (read_write_access(self.permissions)) {
-		const file_search = directory_search(self.inner.__inner, file_name)
-		if (file_search) {
-			return wrap_entry(ReadStatus.Ok, file_search.result)
+class RfwfsDirectory<T extends Entry> {
+	private inner: T[];
+
+	constructor(inner: T[]) {
+		this.inner = inner
+	}
+
+	public sort() {
+		this.inner.sort((a,z) => a.name.read().localeCompare(z.name.read()))
+	}
+
+	public clone<P extends ConstEnum>(dyn_permissions: P, file_name: string): WrapResultEntry<T, ReadStatus> {
+		if (read_write_access(dyn_permissions)) {
+			const clone_find = directory_search(this.inner, file_name)
+			if (clone_find) {
+				return wrap_entry(ReadStatus.Ok, { ...clone_find.result })
+			}
+			return wrap_entry(ReadStatus.NotFound)
 		}
-		return wrap_entry(ReadStatus.NotFound)
+		return wrap_entry(ReadStatus.Denied)
 	}
-	return wrap_entry(ReadStatus.Denied)
-}
 
-function directory_pop<E extends Entry>(self: EntryCollection<E>, file_name: string): WrapResultEntry<E, ReadStatus> {
-	if (read_write_access(self.permissions)) {
-		const pop_find = directory_search(self.inner.__inner, file_name)
-		if (pop_find) {
-			self.inner.__inner.splice(pop_find.some, 1)
-			return wrap_entry(ReadStatus.Ok, pop_find.result)
+	public find<P extends ConstEnum>(dyn_permissions: P, file_name: string): WrapResultEntry<T, ReadStatus> {
+		if (read_write_access(dyn_permissions)) {
+			const file_search = directory_search(this.inner, file_name)
+			if (file_search) {
+				return wrap_entry(ReadStatus.Ok, file_search.result)
+			}
+			return wrap_entry(ReadStatus.NotFound)
 		}
-		return wrap_entry(ReadStatus.NotFound)
+		return wrap_entry(ReadStatus.Denied)
 	}
-	return wrap_entry(ReadStatus.Denied)
-}
 
-function directory_clone<E extends Entry>(self: EntryCollection<E>, file_name: string): WrapResultEntry<E, ReadStatus> {
-	if (read_write_access(self.permissions)) {
-		const clone_find = directory_search(self.inner.__inner, file_name)
-		if (clone_find) {
-			return wrap_entry(ReadStatus.Ok, { ...clone_find.result })
+	public push<P extends ConstEnum, E extends T>(dyn_permissions: P, entry: E): WrapResultNone<PushStatus> {
+		if (read_write_access(dyn_permissions)) {
+			const no_duplicates = directory_search(this.inner, entry.name.read())
+			if (!no_duplicates) {
+				this.inner.push(entry)
+				this.inner.sort()
+				return wrap_none(PushStatus.Ok)
+			}
+			return wrap_none(PushStatus.Duplicate)
 		}
-		return wrap_entry(ReadStatus.NotFound)
+		return wrap_none(PushStatus.Denied)
 	}
-	return wrap_entry(ReadStatus.Denied)
-}
 
-function inner_read<I extends FileInner, P extends ConstEnum>(self: EntryValue<I>, permissions: P): FileInner | undefined {
-	return read_access(permissions) ? self.__inner : undefined
-}
-
-function inner_write<I extends FileInner, P extends ConstEnum>(self: EntryValue<I>, permissions: P, item: I): boolean {
-	if (write_access(permissions)) {
-		self.__inner = item
-		return true
+	public pop<P extends ConstEnum>(dyn_permissions: P, file_name: string): WrapResultEntry<T, ReadStatus> {
+		if (read_write_access(dyn_permissions)) {
+			const pop_find = directory_search(this.inner, file_name)
+			if (pop_find) {
+				this.inner.splice(pop_find.some, 1)
+				return wrap_entry(ReadStatus.Ok, pop_find.result)
+			}
+			return wrap_entry(ReadStatus.NotFound)
+		}
+		return wrap_entry(ReadStatus.Denied)
 	}
-	return false
-}
-
-function inner<P extends ConstEnum, I, R extends EntryValue<I>>(permissions: P, inner_default: I): R {
-	const inner_trait = { __inner: inner_default } as R
-	inner_trait.write = function(item) { return inner_write(this, permissions, item) }
-	inner_trait.read  = function()     { return inner_read(this, permissions) }
-	return inner_trait
-}
-
-function dir_inner<T extends Entry>(self: EntryCollection<T>, collection: T[]): EntryCollectionManipulate<T> {
-	const collection_trait = { __inner: collection } as EntryCollectionManipulate<T>
-	collection_trait.clone = function(file_name) { return directory_clone(self, file_name) }
-	collection_trait.find  = function(file_name) { return directory_find(self, file_name) }
-	collection_trait.push  = function(entry)     { return directory_push(self, entry) }
-	collection_trait.sort  = function()          { return directory_sort(this) }
-	collection_trait.pop   = function(file_name) { return directory_pop(self, file_name) }
-	collection_trait.sort() //the default collection is automatically sorted on directory creation.
-	return collection_trait
 }
 
 const rfwfs = {} as Rfwfs
