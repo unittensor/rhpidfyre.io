@@ -5,26 +5,23 @@ import directory_search from "./index"
 import hash_table from "./hash"
 
 type FileInner = string | number
-type EntryFileInner = EntryValue<FileInner, FileInner | undefined>
 
-interface EntryValue<T, U = T> {
-	__inner: T,
-	write: (value: T) => boolean,
-	read: () => U,
-}
 interface Entry {
 	permissions: Permissions,
 	timestamp: EntryValue<number>,
 	name: EntryValue<string>,
 	readonly type: EntryType,
 }
+
 interface EntryFile extends Entry {
-	inner: EntryFileInner,
+	inner: EntryValue<FileInner>,
 	hash: string,
 }
+
 interface EntryCollection<T extends Entry> extends Entry {
-	inner: EntryCollectionManipulate<T>,
+	inner: RfwfsDirectory<T>,
 }
+
 interface EntryCollectionManipulate<T extends Entry> {
 	__inner: T[],
 	clone: (file_name: string) => WrapResultEntry<T, ReadStatus>
@@ -33,9 +30,10 @@ interface EntryCollectionManipulate<T extends Entry> {
 	sort: () => void,
 	pop: (file_name: string) => WrapResultEntry<T, ReadStatus>,
 }
+
 interface Rfwfs {
 	directory: <T extends Entry>(default_name: string, default_permissions: Permissions, default_timestamp?: number, default_inner?: T[]) => EntryCollection<T>,
-	file: (default_name: string, default_permissions: Permissions, default_timestamp?: number, default_inner?: FileInner) => Promise<EntryFile>,
+	file: (default_name: string, default_permissions: Permissions, default_timestamp?: number, default_inner?: FileInner) => EntryFile,
 	is_binary: <T extends Entry>(entry: T) => boolean,
 	is_file: <T extends Entry>(entry: T) => boolean,
 	is_dir: <T extends Entry>(entry: T) => boolean,
@@ -57,39 +55,43 @@ function write_access<P extends ConstEnum>(permissions: P): boolean {
 	return read_write_access(permissions) || permissions === Permissions.w
 }
 
-class Inner<T> {
-	private inner: T;
+class EntryValue<T> {
+	public inner: T;
+	protected entry: Entry
 
-	constructor(inner_default: T) {
+	constructor(entry: Entry, inner_default: T) {
 		this.inner = inner_default
+		this.entry = entry
 	}
 
-	public write<P extends ConstEnum, I extends T>(dyn_permissions: P, item: I): boolean {
-		if (write_access(dyn_permissions)) {
+	public write<I extends T>(item: I): boolean {
+		if (write_access(this.entry.permissions)) {
 			this.inner = item
 			return true
 		}
 		return false
 	}
 
-	public read<P extends ConstEnum>(dyn_permissions: P): T | undefined {
-		return read_access(dyn_permissions) ? this.inner : undefined
+	public read(): T | undefined {
+		return read_access(this.entry.permissions) ? this.inner : undefined
 	}
 }
 
 class RfwfsDirectory<T extends Entry> {
-	private inner: T[];
+	public inner: T[];
+	protected entry: Entry
 
-	constructor(inner: T[]) {
+	constructor(entry: Entry, inner: T[]) {
 		this.inner = inner
+		this.entry = entry
 	}
 
 	public sort() {
-		this.inner.sort((a,z) => a.name.read().localeCompare(z.name.read()))
+		this.inner.sort((a,z) => a.name.inner.localeCompare(z.name.inner))
 	}
 
-	public clone<P extends ConstEnum>(dyn_permissions: P, file_name: string): WrapResultEntry<T, ReadStatus> {
-		if (read_write_access(dyn_permissions)) {
+	public clone(file_name: string): WrapResultEntry<T, ReadStatus> {
+		if (read_write_access(this.entry.permissions)) {
 			const clone_find = directory_search(this.inner, file_name)
 			if (clone_find) {
 				return wrap_entry(ReadStatus.Ok, { ...clone_find.result })
@@ -99,8 +101,8 @@ class RfwfsDirectory<T extends Entry> {
 		return wrap_entry(ReadStatus.Denied)
 	}
 
-	public find<P extends ConstEnum>(dyn_permissions: P, file_name: string): WrapResultEntry<T, ReadStatus> {
-		if (read_write_access(dyn_permissions)) {
+	public find(file_name: string): WrapResultEntry<T, ReadStatus> {
+		if (read_write_access(this.entry.permissions)) {
 			const file_search = directory_search(this.inner, file_name)
 			if (file_search) {
 				return wrap_entry(ReadStatus.Ok, file_search.result)
@@ -110,9 +112,9 @@ class RfwfsDirectory<T extends Entry> {
 		return wrap_entry(ReadStatus.Denied)
 	}
 
-	public push<P extends ConstEnum, E extends T>(dyn_permissions: P, entry: E): WrapResultNone<PushStatus> {
-		if (read_write_access(dyn_permissions)) {
-			const no_duplicates = directory_search(this.inner, entry.name.read())
+	public push<E extends T>(entry: E): WrapResultNone<PushStatus> {
+		if (read_write_access(this.entry.permissions)) {
+			const no_duplicates = directory_search(this.inner, entry.name.inner)
 			if (!no_duplicates) {
 				this.inner.push(entry)
 				this.inner.sort()
@@ -123,8 +125,8 @@ class RfwfsDirectory<T extends Entry> {
 		return wrap_none(PushStatus.Denied)
 	}
 
-	public pop<P extends ConstEnum>(dyn_permissions: P, file_name: string): WrapResultEntry<T, ReadStatus> {
-		if (read_write_access(dyn_permissions)) {
+	public pop(file_name: string): WrapResultEntry<T, ReadStatus> {
+		if (read_write_access(this.entry.permissions)) {
 			const pop_find = directory_search(this.inner, file_name)
 			if (pop_find) {
 				this.inner.splice(pop_find.some, 1)
@@ -133,6 +135,31 @@ class RfwfsDirectory<T extends Entry> {
 			return wrap_entry(ReadStatus.NotFound)
 		}
 		return wrap_entry(ReadStatus.Denied)
+	}
+}
+
+class RfwfsFileContainer {
+	public file: EntryFile
+
+	constructor(default_name: string, default_permissions: Permissions, default_timestamp: number, default_inner: FileInner) {
+		this.file = { type: EntryType.File } as EntryFile
+		this.file.hash = "0",
+		this.file.permissions = default_permissions,
+		this.file.timestamp = new EntryValue(this.file, default_timestamp)
+		this.file.inner     = new EntryValue(this.file, default_inner)
+		this.file.name      = new EntryValue(this.file, default_name)
+	}
+}
+
+class RfwfsDirectoryContainer<T extends Entry> {
+	public directory: EntryCollection<T>
+
+	constructor(default_name: string, default_permissions: Permissions, default_timestamp: number, default_inner: T[]) {
+		this.directory = { type: EntryType.Directory } as EntryCollection<T>
+		this.directory.permissions = default_permissions,
+		this.directory.timestamp = new EntryValue(this.directory, default_timestamp)
+		this.directory.inner     = new RfwfsDirectory(this.directory, default_inner)
+		this.directory.name      = new EntryValue(this.directory, default_name)
 	}
 }
 
@@ -148,23 +175,24 @@ rfwfs.is_binary = function(entry) {
 	return entry.type === EntryType.Binary
 }
 
-rfwfs.file = async function(default_name, default_permissions, default_timestamp, default_inner = "") {
-	const file = { type: EntryType.File } as EntryFile
-	file.permissions = default_permissions
-	file.timestamp = inner(default_permissions, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
-	file.inner = inner(default_permissions, default_inner)
-	file.name = inner(default_permissions, default_name)
-	file.hash = await hash_table.sha256(default_inner)
-	return file
+rfwfs.file = function(default_name, default_permissions, default_timestamp, default_inner) {
+	const file_container = new RfwfsFileContainer(
+		default_name,
+		default_permissions,
+		default_timestamp ? default_timestamp : (Date.now()/1000)|0,
+		default_inner ? default_inner : "",
+	)
+	return file_container.file
 }
 
 rfwfs.directory = function<T extends Entry>(default_name: string, default_permissions: Permissions, default_timestamp?: number, default_inner?: T[]): EntryCollection<T> {
-	const directory = { type: EntryType.Directory } as EntryCollection<T>
-	directory.permissions = default_permissions
-	directory.timestamp = inner(default_permissions, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
-	directory.inner = inner(default_permissions, default_inner)
-	directory.name = inner(default_permissions, default_name)
-	return directory
+	const directory_cotainer = new RfwfsDirectoryContainer(
+		default_name,
+		default_permissions,
+		default_timestamp ? default_timestamp : (Date.now()/1000)|0,
+		default_inner ? default_inner : [],
+	)
+	return directory_cotainer.directory
 }
 
 export default rfwfs
