@@ -128,31 +128,6 @@ class RfwfsDirectory<T extends Entry> {
 	}
 }
 
-class RfwfsFileContainer {
-	public file: EntryFile
-
-	constructor(default_name: string, default_permissions: Permissions, default_timestamp: number, default_inner: FileInner) {
-		this.file = { type: EntryType.File } as EntryFile
-		this.file.hash = "0"
-		this.file.permissions = default_permissions
-		this.file.timestamp = new EntryValue(this.file, default_timestamp)
-		this.file.inner     = new EntryValue(this.file, default_inner)
-		this.file.name      = new EntryValue(this.file, default_name)
-	}
-}
-
-class RfwfsDirectoryContainer<T extends Entry> {
-	public directory: EntryCollection<T>
-
-	constructor(default_name: string, default_permissions: Permissions, default_timestamp: number, default_inner: T[]) {
-		this.directory = { type: EntryType.Directory } as EntryCollection<T>
-		this.directory.permissions = default_permissions
-		this.directory.timestamp = new EntryValue(this.directory, default_timestamp)
-		this.directory.inner     = new RfwfsDirectory(this.directory, default_inner)
-		this.directory.name      = new EntryValue(this.directory, default_name)
-	}
-}
-
 const rfwfs = {} as Rfwfs
 
 rfwfs.is_dir = function(entry) {
@@ -166,23 +141,22 @@ rfwfs.is_binary = function(entry) {
 }
 
 rfwfs.file = function(default_name, default_permissions, default_timestamp, default_inner) {
-	const file_container = new RfwfsFileContainer(
-		default_name,
-		default_permissions,
-		default_timestamp ? default_timestamp : (Date.now()/1000)|0,
-		default_inner ? default_inner : ""
-	)
-	return file_container.file
+	const file = { type: EntryType.File } as EntryFile
+	file.hash = "0"
+	file.permissions = default_permissions
+	file.timestamp = new EntryValue(file, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
+	file.inner     = new EntryValue(file, default_inner ? default_inner : "")
+	file.name      = new EntryValue(file, default_name)
+	return file
 }
 
 rfwfs.directory = function<T extends Entry>(default_name: string, default_permissions: Permissions, default_timestamp?: number, default_inner?: T[]): EntryCollection<T> {
-	const directory_cotainer = new RfwfsDirectoryContainer(
-		default_name,
-		default_permissions,
-		default_timestamp ? default_timestamp : (Date.now()/1000)|0,
-		default_inner ? default_inner : []
-	)
-	return directory_cotainer.directory
+	const directory = { type: EntryType.Directory } as EntryCollection<T>
+	directory.permissions = default_permissions
+	directory.timestamp = new EntryValue(directory, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
+	directory.inner     = new RfwfsDirectory(directory, default_inner ? default_inner : [])
+	directory.name      = new EntryValue(directory, default_name)
+	return directory
 }
 
 export default rfwfs
