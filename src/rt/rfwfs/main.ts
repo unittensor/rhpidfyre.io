@@ -162,6 +162,7 @@ rfwfs.directory = function<T extends Entry>(default_name: string, default_permis
 export default rfwfs
 export {
 	type EntryCollection,
+	type RfwfsDirectory,
 	type FileInner,
 	type EntryFile,
 	type Entry,
