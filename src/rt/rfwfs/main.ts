@@ -2,7 +2,6 @@ import { EntryType, PushStatus, ReadStatus, Permissions, ConstEnum, PermissionsB
 import { wrap_entry, wrap_none, WrapResultEntry, WrapResultNone } from "./wrap"
 
 import directory_search from "./index"
-import hash_table from "./hash"
 
 type FileInner = string | number
 
@@ -20,15 +19,6 @@ interface EntryFile extends Entry {
 
 interface EntryCollection<T extends Entry> extends Entry {
 	inner: RfwfsDirectory<T>,
-}
-
-interface EntryCollectionManipulate<T extends Entry> {
-	__inner: T[],
-	clone: (file_name: string) => WrapResultEntry<T, ReadStatus>
-	find: (file_name: string) => WrapResultEntry<T, ReadStatus>
-	push: (entry: Entry) => WrapResultNone<PushStatus>,
-	sort: () => void,
-	pop: (file_name: string) => WrapResultEntry<T, ReadStatus>,
 }
 
 interface Rfwfs {
@@ -143,8 +133,8 @@ class RfwfsFileContainer {
 
 	constructor(default_name: string, default_permissions: Permissions, default_timestamp: number, default_inner: FileInner) {
 		this.file = { type: EntryType.File } as EntryFile
-		this.file.hash = "0",
-		this.file.permissions = default_permissions,
+		this.file.hash = "0"
+		this.file.permissions = default_permissions
 		this.file.timestamp = new EntryValue(this.file, default_timestamp)
 		this.file.inner     = new EntryValue(this.file, default_inner)
 		this.file.name      = new EntryValue(this.file, default_name)
@@ -156,7 +146,7 @@ class RfwfsDirectoryContainer<T extends Entry> {
 
 	constructor(default_name: string, default_permissions: Permissions, default_timestamp: number, default_inner: T[]) {
 		this.directory = { type: EntryType.Directory } as EntryCollection<T>
-		this.directory.permissions = default_permissions,
+		this.directory.permissions = default_permissions
 		this.directory.timestamp = new EntryValue(this.directory, default_timestamp)
 		this.directory.inner     = new RfwfsDirectory(this.directory, default_inner)
 		this.directory.name      = new EntryValue(this.directory, default_name)
@@ -180,7 +170,7 @@ rfwfs.file = function(default_name, default_permissions, default_timestamp, defa
 		default_name,
 		default_permissions,
 		default_timestamp ? default_timestamp : (Date.now()/1000)|0,
-		default_inner ? default_inner : "",
+		default_inner ? default_inner : ""
 	)
 	return file_container.file
 }
@@ -190,14 +180,13 @@ rfwfs.directory = function<T extends Entry>(default_name: string, default_permis
 		default_name,
 		default_permissions,
 		default_timestamp ? default_timestamp : (Date.now()/1000)|0,
-		default_inner ? default_inner : [],
+		default_inner ? default_inner : []
 	)
 	return directory_cotainer.directory
 }
 
 export default rfwfs
 export {
-	type EntryCollectionManipulate,
 	type EntryCollection,
 	type FileInner,
 	type EntryFile,
