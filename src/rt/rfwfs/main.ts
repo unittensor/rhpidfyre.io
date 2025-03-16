@@ -68,21 +68,21 @@ class EntryValue<T> {
 }
 
 class RfwfsDirectory<T extends Entry> {
-	public inner: T[];
+	public directory: T[];
 	protected entry: Entry
 
-	constructor(entry: Entry, inner: T[]) {
-		this.inner = inner
+	constructor(entry: Entry, directory: T[]) {
+		this.directory = directory
 		this.entry = entry
 	}
 
 	public sort() {
-		this.inner.sort((a,z) => a.name.inner.localeCompare(z.name.inner))
+		this.directory.sort((a,z) => a.name.inner.localeCompare(z.name.inner))
 	}
 
 	public clone(file_name: string): WrapResultEntry<T, ReadStatus> {
 		if (read_write_access(this.entry.permissions)) {
-			const clone_find = directory_search(this.inner, file_name)
+			const clone_find = directory_search(this.directory, file_name)
 			if (clone_find) {
 				return wrap_entry(ReadStatus.Ok, { ...clone_find.result })
 			}
@@ -93,7 +93,7 @@ class RfwfsDirectory<T extends Entry> {
 
 	public find(file_name: string): WrapResultEntry<T, ReadStatus> {
 		if (read_write_access(this.entry.permissions)) {
-			const file_search = directory_search(this.inner, file_name)
+			const file_search = directory_search(this.directory, file_name)
 			if (file_search) {
 				return wrap_entry(ReadStatus.Ok, file_search.result)
 			}
@@ -104,10 +104,10 @@ class RfwfsDirectory<T extends Entry> {
 
 	public push<E extends T>(entry: E): WrapResultNone<PushStatus> {
 		if (read_write_access(this.entry.permissions)) {
-			const no_duplicates = directory_search(this.inner, entry.name.inner)
+			const no_duplicates = directory_search(this.directory, entry.name.inner)
 			if (!no_duplicates) {
-				this.inner.push(entry)
-				this.inner.sort()
+				this.directory.push(entry)
+				this.directory.sort()
 				return wrap_none(PushStatus.Ok)
 			}
 			return wrap_none(PushStatus.Duplicate)
@@ -117,9 +117,9 @@ class RfwfsDirectory<T extends Entry> {
 
 	public pop(file_name: string): WrapResultEntry<T, ReadStatus> {
 		if (read_write_access(this.entry.permissions)) {
-			const pop_find = directory_search(this.inner, file_name)
+			const pop_find = directory_search(this.directory, file_name)
 			if (pop_find) {
-				this.inner.splice(pop_find.some, 1)
+				this.directory.splice(pop_find.some, 1)
 				return wrap_entry(ReadStatus.Ok, pop_find.result)
 			}
 			return wrap_entry(ReadStatus.NotFound)
