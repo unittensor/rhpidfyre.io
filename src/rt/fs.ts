@@ -1,6 +1,6 @@
-import { Permissions } from "../enum"
+import { Permissions } from "./rfwfs/enum"
 
-import rfwfs from "../main"
+import rfwfs from "./rfwfs/main"
 
 const time_now = (Date.now()/1000)|0
 
