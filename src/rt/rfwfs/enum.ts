@@ -31,9 +31,9 @@ const enum ReadStatus {
 	NotFound,
 	Denied,
 }
-const enum Result {
-	None,
+const enum Option {
 	Ok,
+	None,
 }
 
 export {
@@ -43,5 +43,5 @@ export {
 	PushStatus,
 	ReadStatus,
 	EntryType,
-	Result,
+	Option,
 }

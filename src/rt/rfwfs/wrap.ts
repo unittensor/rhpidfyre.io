@@ -1,9 +1,9 @@
-import { Result, type ConstEnum } from "./enum"
+import { Option, type ConstEnum } from "./enum"
 import { type Entry } from "./main"
 
 type WrapResultEntry<T extends Entry, U> = WrapResult<T | undefined, U>
 type WrapBSearch<T extends Entry> = WrapResult<T, number>
-type WrapResultNone<T> = WrapResult<Result.None, T>
+type WrapResultNone<T> = WrapResult<Option.None, T>
 
 interface WrapResult<T, U> {
 	/** The resulting value if `U` is a success */
@@ -25,7 +25,7 @@ function wrap_entry<T extends ConstEnum, U extends Entry>(status: T, result?: U)
 }
 
 function wrap_none<T extends ConstEnum>(status: T): WrapResultNone<T> {
-	return wrap(Result.None, status)
+	return wrap(Option.None, status)
 }
 
 export default wrap
