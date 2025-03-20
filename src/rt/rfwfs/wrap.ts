@@ -6,14 +6,14 @@ type WrapBSearch<T extends Entry> = WrapResult<T, number>
 type WrapResultNone<T> = WrapResult<Option.None, T>
 
 interface WrapResult<T, U> {
-	/** The resulting value if `U` is a success */
+	/** The resulting value if `U` is a success status */
 	readonly result: T,
-	/** Represents some arbitrary extra value, usually a success status */
-	readonly some: U
+	/** Represents some arbitrary extra value, usually a status */
+	readonly status: U,
 }
 
 function wrap<T, U>(result: T, some: U): WrapResult<T, U> {
-	return { result: result, some: some }
+	return { result: result, status: some }
 }
 
 function wrap_bsearch<T extends Entry>(index: number, result: T): WrapBSearch<T> {

@@ -119,7 +119,7 @@ class RfwfsDirectory<T extends Entry> {
 		if (read_write_access(this.entry.permissions)) {
 			const pop_find = directory_search(this.directory, file_name)
 			if (pop_find) {
-				this.directory.splice(pop_find.some, 1)
+				this.directory.splice(pop_find.status, 1)
 				return wrap_entry(ReadStatus.Ok, pop_find.result)
 			}
 			return wrap_entry(ReadStatus.NotFound)
