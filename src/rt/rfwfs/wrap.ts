@@ -1,9 +1,10 @@
-import { Option, type ConstEnum } from "./enum"
-import { type Entry } from "./main"
+import { ExecuteStatus, Option, type ConstEnum } from "./enum"
+import { type BinaryError, type Entry } from "./main"
 
 type WrapResultEntry<T extends Entry, U> = WrapResult<T | undefined, U>
 type WrapBSearch<T extends Entry> = WrapResult<T, number>
 type WrapResultNone<T> = WrapResult<Option.None, T>
+type WrapBinary = WrapResult<ExecuteStatus, BinaryError | undefined>
 
 interface WrapResult<T, U> {
 	/** The resulting value if `U` is a success status */
@@ -28,13 +29,19 @@ function wrap_none<T extends ConstEnum>(status: T): WrapResultNone<T> {
 	return wrap(Option.None, status)
 }
 
+function wrap_binary(status: ExecuteStatus, result?: BinaryError): WrapBinary {
+	return wrap(status, result)
+}
+
 export default wrap
 export {
-	wrap_bsearch,
-	wrap_entry,
-	wrap_none,
 	type WrapResultEntry,
 	type WrapResultNone,
 	type WrapBSearch,
 	type WrapResult,
+	type WrapBinary,
+	wrap_bsearch,
+	wrap_binary,
+	wrap_entry,
+	wrap_none,
 }

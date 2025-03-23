@@ -1,47 +1,64 @@
-import { EntryType, PushStatus, ReadStatus, Permissions, ConstEnum, PermissionsBinary } from "./enum"
-import { wrap_entry, wrap_none, WrapResultEntry, WrapResultNone } from "./wrap"
+import { EntryType, PushStatus, ReadStatus, Permissions, ExecuteStatus } from "./enum"
+import { wrap_entry, wrap_none, type WrapResultEntry, type WrapResultNone, type WrapBinary, wrap_binary } from "./wrap"
 
 import directory_search from "./index"
 
 type FileInner = string | number
+type BinaryError = string
 
-interface Entry {
+type BinaryEntry = () => EntryStripped
+type BinaryLambda = (binary_entry: BinaryEntry) => void
+
+type Directory<T extends Entry> = EntryCollection<T>
+type DirectoryAny = EntryCollection<Entry>
+type DirectoryAnyDepth = EntryCollection<DirectoryAny>
+
+interface Root<T extends Entry> {
+	readonly type: EntryType,
+	inner: T[],
+}
+interface EntryStripped {
+	readonly type: EntryType,
 	permissions: Permissions,
 	timestamp: EntryValue<number>,
 	name: EntryValue<string>,
-	readonly type: EntryType,
 }
-
+interface Entry extends EntryStripped {
+	parent: DirectoryAny,
+}
 interface EntryFile extends Entry {
 	inner: EntryValue<FileInner>,
 	hash: string,
 }
-
 interface EntryCollection<T extends Entry> extends Entry {
 	inner: RfwfsDirectory<T>,
 }
-
-interface Rfwfs {
-	directory: <T extends Entry>(default_name: string, default_permissions: Permissions, default_timestamp?: number, default_inner?: T[]) => EntryCollection<T>,
-	file: (default_name: string, default_permissions: Permissions, default_timestamp?: number, default_inner?: FileInner) => EntryFile,
-	is_binary: <T extends Entry>(entry: T) => boolean,
-	is_file: <T extends Entry>(entry: T) => boolean,
-	is_dir: <T extends Entry>(entry: T) => boolean,
+interface EntryBinary extends Entry {
+	inner: RfwfsBinary
 }
 
-function execute_access<P extends ConstEnum>(permissions: P): boolean {
-	return permissions === PermissionsBinary.rwx
-		|| permissions === PermissionsBinary.rx
-		|| permissions === PermissionsBinary.wx
-		|| permissions === PermissionsBinary.x
+function strip_entry<T extends Entry>(entry: T): EntryStripped {
+	return {
+		type: entry.type,
+		permissions: entry.permissions,
+		timestamp: entry.timestamp,
+		name: entry.name,
+	}
 }
-function read_write_access<P extends ConstEnum>(permissions: P): boolean {
+
+function execute_access(permissions: Permissions): boolean {
+	return permissions === Permissions.rwx
+		|| permissions === Permissions.rx
+		|| permissions === Permissions.wx
+		|| permissions === Permissions.x
+}
+function read_write_access(permissions: Permissions): boolean {
 	return permissions === Permissions.rw
 }
-function read_access<P extends ConstEnum>(permissions: P): boolean {
+function read_access(permissions: Permissions): boolean {
 	return read_write_access(permissions) || permissions === Permissions.r
 }
-function write_access<P extends ConstEnum>(permissions: P): boolean {
+function write_access(permissions: Permissions): boolean {
 	return read_write_access(permissions) || permissions === Permissions.w
 }
 
@@ -69,7 +86,7 @@ class EntryValue<T> {
 
 class RfwfsDirectory<T extends Entry> {
 	public directory: T[];
-	protected entry: Entry
+	protected entry: Entry;
 
 	constructor(entry: Entry, directory: T[]) {
 		this.directory = directory
@@ -128,41 +145,109 @@ class RfwfsDirectory<T extends Entry> {
 	}
 }
 
-const rfwfs = {} as Rfwfs
+class RfwfsBinary {
+	public lambda: BinaryLambda;
+	protected entry: Entry;
 
-rfwfs.is_dir = function(entry) {
-	return entry.type === EntryType.Directory
-}
-rfwfs.is_file = function(entry) {
-	return entry.type === EntryType.File
-}
-rfwfs.is_binary = function(entry) {
-	return entry.type === EntryType.Binary
+	constructor(entry: Entry, lambda: BinaryLambda) {
+		this.lambda = lambda
+		this.entry = entry
+	}
+
+	public execute(): WrapBinary {
+		if (execute_access(this.entry.permissions)) {
+			try {
+				this.lambda(() => strip_entry(this.entry))
+			} catch(binary_e) {
+				return wrap_binary(ExecuteStatus.Panic, (binary_e as object).toString())
+			}
+			return wrap_binary(ExecuteStatus.Ok)
+		}
+		return wrap_binary(ExecuteStatus.Denied)
+	}
 }
 
-rfwfs.file = function(default_name, default_permissions, default_timestamp, default_inner) {
-	const file = { type: EntryType.File } as EntryFile
-	file.hash = "0"
-	file.permissions = default_permissions
-	file.timestamp = new EntryValue(file, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
-	file.inner     = new EntryValue(file, default_inner ? default_inner : "")
-	file.name      = new EntryValue(file, default_name)
-	return file
+class rfwfs_static {
+	public static is_dir<T extends Entry>(entry: T): boolean {
+		return entry.type === EntryType.Directory
+	}
+	public static is_file<T extends Entry>(entry: T): boolean {
+		return entry.type === EntryType.File
+	}
+	public static is_binary<T extends Entry>(entry: T): boolean {
+		return entry.type === EntryType.Binary
+	}
+	public static is_root<T extends Entry>(entry: Root<T>): boolean {
+		return entry.type === EntryType.Root
+	}
 }
 
-rfwfs.directory = function<T extends Entry>(default_name: string, default_permissions: Permissions, default_timestamp?: number, default_inner?: T[]): EntryCollection<T> {
-	const directory = { type: EntryType.Directory } as EntryCollection<T>
-	directory.permissions = default_permissions
-	directory.timestamp = new EntryValue(directory, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
-	directory.inner     = new RfwfsDirectory(directory, default_inner ? default_inner : [])
-	directory.name      = new EntryValue(directory, default_name)
-	return directory
+class rfwfs<T extends Entry> extends rfwfs_static {
+	protected root: Root<T>;
+
+	constructor(inner: T[]) {
+		super()
+		this.root = { type: EntryType.Root, inner: inner }
+	}
+
+	public file(
+		default_name: string,
+		default_permissions: Permissions,
+		default_parent: DirectoryAny,
+		default_timestamp?: number,
+		default_inner?: FileInner
+	): EntryFile {
+		const file = { type: EntryType.File } as EntryFile
+		file.hash = "0"
+		file.parent = default_parent
+		file.permissions = default_permissions
+		file.timestamp = new EntryValue(file, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
+		file.inner     = new EntryValue(file, default_inner ? default_inner : "")
+		file.name      = new EntryValue(file, default_name)
+		return file
+	}
+
+	public directory<T extends Entry>(
+		default_name: string,
+		default_permissions: Permissions,
+		default_parent: DirectoryAny,
+		default_timestamp?: number,
+		default_inner?: T[]
+	): EntryCollection<T> {
+		const directory = { type: EntryType.Directory } as EntryCollection<T>
+		directory.parent = default_parent
+		directory.permissions = default_permissions
+		directory.timestamp = new EntryValue(directory, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
+		directory.inner     = new RfwfsDirectory(directory, default_inner ? default_inner : [])
+		directory.name      = new EntryValue(directory, default_name)
+		return directory
+	}
+
+	public binary(
+		default_name: string,
+		default_permissions: Permissions,
+		default_parent: DirectoryAny,
+		default_timestamp?: number,
+		default_inner?: BinaryLambda
+	): EntryBinary {
+		const binary = { type: EntryType.Binary } as EntryBinary
+		binary.parent = default_parent
+		binary.permissions = default_permissions
+		binary.timestamp = new EntryValue(binary, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
+		binary.inner     = new RfwfsBinary(binary, default_inner ? default_inner : () => {})
+		binary.name      = new EntryValue(binary, default_name)
+		return binary
+	}
 }
 
 export default rfwfs
 export {
 	type EntryCollection,
+	type DirectoryAnyDepth,
 	type RfwfsDirectory,
+	type DirectoryAny,
+	type BinaryError,
+	type Directory,
 	type FileInner,
 	type EntryFile,
 	type Entry,
