@@ -1,22 +1,26 @@
 import { ReadStatus } from "./enum"
 import { wrap_entry, type WrapResultEntry } from "./wrap"
 
-import rfwfs, { type DirectoryDepth, type Directory } from "./main"
+import rfwfs, { type DirectoryAny, type EntryCollection, type DirectoryAnyDepth } from "./main"
 import fs from "../fs"
 
 type Path = string[]
 
-interface LibHome {
-	goal: (path: Path) => WrapResultEntry<Directory, ReadStatus>
+interface Home {
 	path: () => Path,
-	get: () => Directory | undefined,
+	dir: () => DirectoryAny | undefined,
+}
+interface Librfwfs {
+	home: Home,
+	traverse_to: (path: Path) => WrapResultEntry<DirectoryAny, ReadStatus>
+	pwd_entry: <T extends EntryCollection<T>>(working_dir: T) => Path | undefined
 }
 
 let username: string = "user"
 
-const libhome = {} as LibHome
+const librfwfs = {} as Librfwfs
 
-libhome.goal = function(path) {
+librfwfs.traverse_to = function(path) {
 	let traverse = fs
 
 	for (const path_name of path) {
@@ -24,7 +28,7 @@ libhome.goal = function(path) {
 
 		if (find.status === ReadStatus.Ok) {
 			if (find.result && rfwfs.is_dir(find.result)) {
-				traverse = find.result as DirectoryDepth
+				traverse = find.result as DirectoryAnyDepth
 			} else {
 				return wrap_entry(ReadStatus.Denied)
 			}
@@ -35,13 +39,22 @@ libhome.goal = function(path) {
 	return wrap_entry(ReadStatus.Ok, traverse)
 }
 
-libhome.path = function() {
+librfwfs.pwd_entry = function(working_dir) {
+
+}
+
+librfwfs.home = {} as Home
+
+librfwfs.home.path = function() {
 	return ["home", username]
 }
 
-libhome.get = function() {
-	const traverse = this.goal(this.path())
+librfwfs.home.dir = function() {
+	const traverse = librfwfs.traverse_to(this.path())
 	return traverse.status === ReadStatus.Ok ? traverse.result : undefined
 }
 
-export default libhome
+export default librfwfs
+export {
+	username
+}

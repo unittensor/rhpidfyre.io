@@ -1,7 +1,35 @@
-import { EntryType, PushStatus, ReadStatus, Permissions, ExecuteStatus } from "./enum"
 import { wrap_entry, wrap_none, type WrapResultEntry, type WrapResultNone, type WrapBinary, wrap_binary } from "./wrap"
 
 import directory_search from "./index"
+
+const enum EntryType {
+	Root,
+	File,
+	Directory,
+	Binary,
+}
+const enum Permissions {
+	r    = 1<<0,
+	w    = 1<<1,
+	x    = 1<<2,
+	none = 1<<3,
+}
+
+const enum PushStatus {
+	Ok,
+	Duplicate,
+	Denied,
+}
+const enum ReadStatus {
+	Ok,
+	NotFound,
+	Denied,
+}
+const enum ExecuteStatus {
+	Ok,
+	Panic,
+	Denied,
+}
 
 type FileInner = string | number
 type BinaryError = string
@@ -46,20 +74,17 @@ function strip_entry<T extends Entry>(entry: T): EntryStripped {
 	}
 }
 
-function execute_access(permissions: Permissions): boolean {
-	return permissions === Permissions.rwx
-		|| permissions === Permissions.rx
-		|| permissions === Permissions.wx
-		|| permissions === Permissions.x
-}
 function read_write_access(permissions: Permissions): boolean {
-	return permissions === Permissions.rw
+	return (permissions & (Permissions.r | Permissions.w)) === (Permissions.r | Permissions.w)
+}
+function execute_access(permissions: Permissions): boolean {
+	return (permissions & Permissions.x) !== 0
 }
 function read_access(permissions: Permissions): boolean {
-	return read_write_access(permissions) || permissions === Permissions.r
+	return (permissions & Permissions.r) !== 0
 }
 function write_access(permissions: Permissions): boolean {
-	return read_write_access(permissions) || permissions === Permissions.w
+	return (permissions & Permissions.w) !== 0
 }
 
 class EntryValue<T> {
@@ -190,7 +215,7 @@ class rfwfs<T extends Entry> extends rfwfs_static {
 		this.root = { type: EntryType.Root, inner: inner }
 	}
 
-	public file(
+	public static file(
 		default_name: string,
 		default_permissions: Permissions,
 		default_parent: DirectoryAny,
@@ -207,7 +232,7 @@ class rfwfs<T extends Entry> extends rfwfs_static {
 		return file
 	}
 
-	public directory<T extends Entry>(
+	public static directory<T extends Entry>(
 		default_name: string,
 		default_permissions: Permissions,
 		default_parent: DirectoryAny,
@@ -223,7 +248,7 @@ class rfwfs<T extends Entry> extends rfwfs_static {
 		return directory
 	}
 
-	public binary(
+	public static binary(
 		default_name: string,
 		default_permissions: Permissions,
 		default_parent: DirectoryAny,
@@ -251,4 +276,9 @@ export {
 	type FileInner,
 	type EntryFile,
 	type Entry,
+	ExecuteStatus,
+	Permissions,
+	PushStatus,
+	ReadStatus,
+	EntryType,
 }

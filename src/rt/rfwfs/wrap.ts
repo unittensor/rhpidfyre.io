@@ -1,5 +1,12 @@
-import { ExecuteStatus, Option, type ConstEnum } from "./enum"
 import { type BinaryError, type Entry } from "./main"
+import { ExecuteStatus } from "./main"
+
+const enum Option {
+	Ok,
+	None,
+}
+
+type ConstEnum = number
 
 type WrapResultEntry<T extends Entry, U> = WrapResult<T | undefined, U>
 type WrapBSearch<T extends Entry> = WrapResult<T, number>
