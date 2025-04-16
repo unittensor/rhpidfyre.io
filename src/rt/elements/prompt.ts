@@ -1,6 +1,6 @@
 import { cyan, green } from "../shell/color"
-import { get_working_dir_name } from "../rfwfs/library"
 
+import librfwfs, { username } from "../rfwfs/library"
 import create from "./create"
 
 interface Ps1Prompt {
@@ -43,14 +43,20 @@ function ps1_element(user: HTMLSpanElement, dir: HTMLSpanElement) {
 	return display
 }
 
-function working_dir() {
-	const dir_name = get_working_dir_name()
-	return dir_name === "user" ? "~" : dir_name
+function working_dir_name() {
+	const dir = librfwfs.home.dir()
+	if (dir) {
+		const dir_name = dir.name.read()
+		if (dir_name) {
+			return dir_name === username ? "~" : dir_name
+		}
+	}
+	return "?"
 }
 
 function working_dir_element() {
 	const user = cyan("user")
-	const dir = green(" "+working_dir())
+	const dir = green(" "+working_dir_name())
 	return ps1_element(user, dir)
 }
 

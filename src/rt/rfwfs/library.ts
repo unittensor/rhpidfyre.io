@@ -1,5 +1,5 @@
-import { ReadStatus } from "./enum"
 import { wrap_entry, type WrapResultEntry } from "./wrap"
+import { ReadStatus } from "./enum/status"
 
 import rfwfs, { type DirectoryAny, type EntryCollection, type DirectoryAnyDepth } from "./main"
 import fs from "../fs"

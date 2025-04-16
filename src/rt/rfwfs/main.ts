@@ -1,3 +1,4 @@
+import { ReadStatus, PushStatus, ExecuteStatus } from "./enum/status"
 import { wrap_entry, wrap_none, type WrapResultEntry, type WrapResultNone, type WrapBinary, wrap_binary } from "./wrap"
 
 import directory_search from "./index"
@@ -15,22 +16,6 @@ const enum Permissions {
 	none = 1<<3,
 }
 
-const enum PushStatus {
-	Ok,
-	Duplicate,
-	Denied,
-}
-const enum ReadStatus {
-	Ok,
-	NotFound,
-	Denied,
-}
-const enum ExecuteStatus {
-	Ok,
-	Panic,
-	Denied,
-}
-
 type FileInner = string | number
 type BinaryError = string
 
@@ -45,22 +30,31 @@ interface Root<T extends Entry> {
 	readonly type: EntryType,
 	inner: T[],
 }
+
+interface RootFile<T extends Entry> extends Root<T> {
+
+}
+
 interface EntryStripped {
 	readonly type: EntryType,
 	permissions: Permissions,
 	timestamp: EntryValue<number>,
 	name: EntryValue<string>,
 }
+
 interface Entry extends EntryStripped {
 	parent: DirectoryAny,
 }
+
 interface EntryFile extends Entry {
 	inner: EntryValue<FileInner>,
 	hash: string,
 }
+
 interface EntryCollection<T extends Entry> extends Entry {
 	inner: RfwfsDirectory<T>,
 }
+
 interface EntryBinary extends Entry {
 	inner: RfwfsBinary
 }
@@ -74,19 +68,6 @@ function strip_entry<T extends Entry>(entry: T): EntryStripped {
 	}
 }
 
-function read_write_access(permissions: Permissions): boolean {
-	return (permissions & (Permissions.r | Permissions.w)) === (Permissions.r | Permissions.w)
-}
-function execute_access(permissions: Permissions): boolean {
-	return (permissions & Permissions.x) !== 0
-}
-function read_access(permissions: Permissions): boolean {
-	return (permissions & Permissions.r) !== 0
-}
-function write_access(permissions: Permissions): boolean {
-	return (permissions & Permissions.w) !== 0
-}
-
 class EntryValue<T> {
 	public inner: T;
 	protected entry: Entry
@@ -97,15 +78,24 @@ class EntryValue<T> {
 	}
 
 	public write<I extends T>(item: I): boolean {
-		if (write_access(this.entry.permissions)) {
+		if (rfwfs.write_access(this.entry.permissions)) {
 			this.inner = item
 			return true
 		}
 		return false
 	}
 
+	/**
+	Convert the inner file value
+
+	Same as `write` but mutates the inner value `T` into a `FileInner`
+	*/
+	public write_into(item: FileInner): boolean {
+		return this.write(item as T)
+	}
+
 	public read(): T | undefined {
-		return read_access(this.entry.permissions) ? this.inner : undefined
+		return rfwfs.write_access(this.entry.permissions) ? this.inner : undefined
 	}
 }
 
@@ -123,7 +113,7 @@ class RfwfsDirectory<T extends Entry> {
 	}
 
 	public clone(file_name: string): WrapResultEntry<T, ReadStatus> {
-		if (read_write_access(this.entry.permissions)) {
+		if (rfwfs.read_write_access(this.entry.permissions)) {
 			const clone_find = directory_search(this.directory, file_name)
 			if (clone_find) {
 				return wrap_entry(ReadStatus.Ok, { ...clone_find.result })
@@ -134,7 +124,7 @@ class RfwfsDirectory<T extends Entry> {
 	}
 
 	public find(file_name: string): WrapResultEntry<T, ReadStatus> {
-		if (read_write_access(this.entry.permissions)) {
+		if (rfwfs.read_write_access(this.entry.permissions)) {
 			const file_search = directory_search(this.directory, file_name)
 			if (file_search) {
 				return wrap_entry(ReadStatus.Ok, file_search.result)
@@ -145,7 +135,7 @@ class RfwfsDirectory<T extends Entry> {
 	}
 
 	public push<E extends T>(entry: E): WrapResultNone<PushStatus> {
-		if (read_write_access(this.entry.permissions)) {
+		if (rfwfs.read_write_access(this.entry.permissions)) {
 			const no_duplicates = directory_search(this.directory, entry.name.inner)
 			if (!no_duplicates) {
 				this.directory.push(entry)
@@ -158,7 +148,7 @@ class RfwfsDirectory<T extends Entry> {
 	}
 
 	public pop(file_name: string): WrapResultEntry<T, ReadStatus> {
-		if (read_write_access(this.entry.permissions)) {
+		if (rfwfs.read_write_access(this.entry.permissions)) {
 			const pop_find = directory_search(this.directory, file_name)
 			if (pop_find) {
 				this.directory.splice(pop_find.status, 1)
@@ -180,7 +170,7 @@ class RfwfsBinary {
 	}
 
 	public execute(): WrapBinary {
-		if (execute_access(this.entry.permissions)) {
+		if (rfwfs.execute_access(this.entry.permissions)) {
 			try {
 				this.lambda(() => strip_entry(this.entry))
 			} catch(binary_e) {
@@ -205,14 +195,43 @@ class rfwfs_static {
 	public static is_root<T extends Entry>(entry: Root<T>): boolean {
 		return entry.type === EntryType.Root
 	}
+
+	public static read_access(permissions: Permissions): boolean {
+		return (permissions & Permissions.r) !== 0
+	}
+	public static write_access(permissions: Permissions): boolean {
+		return (permissions & Permissions.w) !== 0
+	}
+	public static execute_access(permissions: Permissions): boolean {
+		return (permissions & Permissions.x) !== 0
+	}
+	public static read_write_access(permissions: Permissions): boolean {
+		return rfwfs.read_access(permissions) && rfwfs.write_access(permissions)
+	}
 }
 
 class rfwfs<T extends Entry> extends rfwfs_static {
-	protected root: Root<T>;
+	public root: Root<T>;
 
 	constructor(inner: T[]) {
 		super()
 		this.root = { type: EntryType.Root, inner: inner }
+	}
+
+	public add_file(
+		default_name: string,
+		default_permissions: Permissions,
+		default_timestamp?: number,
+		default_inner?: FileInner
+	): EntryFile {
+		const file = { type: EntryType.File } as EntryFile
+		file.hash = "0"
+		file.permissions = default_permissions
+		file.parent    = this.root
+		file.timestamp = new EntryValue(file, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
+		file.inner     = new EntryValue(file, default_inner ? default_inner : "")
+		file.name      = new EntryValue(file, default_name)
+		return file
 	}
 
 	public static file(
@@ -224,8 +243,8 @@ class rfwfs<T extends Entry> extends rfwfs_static {
 	): EntryFile {
 		const file = { type: EntryType.File } as EntryFile
 		file.hash = "0"
-		file.parent = default_parent
 		file.permissions = default_permissions
+		file.parent = default_parent
 		file.timestamp = new EntryValue(file, default_timestamp ? default_timestamp : (Date.now()/1000)|0)
 		file.inner     = new EntryValue(file, default_inner ? default_inner : "")
 		file.name      = new EntryValue(file, default_name)
@@ -276,9 +295,6 @@ export {
 	type FileInner,
 	type EntryFile,
 	type Entry,
-	ExecuteStatus,
 	Permissions,
-	PushStatus,
-	ReadStatus,
 	EntryType,
 }

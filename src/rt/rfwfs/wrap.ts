@@ -1,5 +1,5 @@
 import { type BinaryError, type Entry } from "./main"
-import { ExecuteStatus } from "./main"
+import { ExecuteStatus } from "./enum/status"
 
 const enum Option {
 	Ok,

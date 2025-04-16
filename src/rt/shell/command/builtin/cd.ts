@@ -1,10 +1,11 @@
-import { set_working_dir, SetDirStatus } from "../../../rfwfs/library"
+import { ReadStatus } from "../../../rfwfs/enum"
 import type { Args, Term } from "../list"
 
+import lib from "../../../rfwfs/library"
 import stdout from "../../../elements/stdout"
 
 export default function cd(term: Term, args: Args): boolean {
-	const new_dir_status = set_working_dir(args[1])
+	const new_dir_status = lib.traverse_to(args)
 
 	if (new_dir_status === SetDirStatus.NotADirectory) {
 		term.appendChild(stdout(`cd: "${args[1]}" is not a directory`))
