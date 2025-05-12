@@ -9,10 +9,9 @@ const enum EntryType {
 	Binary,
 }
 const enum Permissions {
-	r    = 1<<0,
-	w    = 1<<1,
-	x    = 1<<2,
-	none = 1<<3,
+	r = 1<<0,
+	w = 1<<1,
+	x = 1<<2,
 }
 const enum ROOT_ID {
 	TRUNK = "/",
