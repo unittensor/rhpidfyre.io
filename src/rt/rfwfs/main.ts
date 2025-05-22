@@ -1,6 +1,7 @@
 import wrap, { type WrapResult, ConstEnum, Option } from "./wrap"
 
 import directory_search from "./index"
+import User from "./users"
 
 const enum EntryType {
 	Root,
@@ -8,16 +9,10 @@ const enum EntryType {
 	Directory,
 	Binary,
 }
-const enum Permissions {
-	r = 1<<0,
-	w = 1<<1,
-	x = 1<<2,
-}
 const enum ROOT_ID {
 	TRUNK = "/",
 	NAME  = "root"
 }
-
 const enum PushStatus {
 	Ok,
 	Duplicate,
@@ -28,15 +23,15 @@ const enum ReadStatus {
 	NotFound,
 	Denied,
 }
-
-interface UserPermissions {
-	readonly root: Permissions.r | Permissions.w | Permissions.x, //Flip OR
-	[index: string]: Permissions
+const enum Permissions {
+	r = 1<<0,
+	w = 1<<1,
+	x = 1<<2,
 }
 
 interface Entry<T extends EntryType = EntryType, N = EntryValue<string>> {
 	readonly type: T,
-	permissions: UserPermissions,
+	owner: User,
 	timestamp: number,
 	name: N
 }
