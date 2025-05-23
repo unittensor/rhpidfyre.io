@@ -1,165 +1,15 @@
 import { ROOT_ID } from "./main";
 
 import Crypto, { type SHA256_String } from "../crypto/generate";
-import wrap, { type WrapResult } from "./wrap";
+import groups, { groups_find_user, GroupSearch } from "./groups";
 
-const enum SysGroups {
-	Wheel,
-	Users,
-}
-const enum GroupSearch {
-	NotFound,
-	WheelResult,
-	UsersResult,
-}
-const enum UserMoveStatus {
-	Ok,
-	RootBlocked,
-	MovingNonExistentUser,
-	AlreadyInWheel,
-	AlreadyInUsers,
-}
 const enum UserSet {
 	Ok,
 	AlreadyLoggedIn,
 	UserDoesNotExist
 }
-const enum GroupRemoveStatus {
-	Ok,
-	RootBlocked,
-	RemovingNonExistentUser,
-}
-
-type User_Index = [User, number]
-type WrapUserSearch = WrapResult<User_Index | undefined, GroupSearch>
-
-interface Groups {
-	wheel: Group,
-	users: Group,
-	together: () => User[]
-}
-
-class Group {
-	protected inner: User[];
-	private type: SysGroups;
-
-	constructor(type: SysGroups) {
-		this.type = type
-		this.inner = []
-	}
-
-	public get_type(): SysGroups {
-		return this.type
-	}
-
-	public get_users(): User[] {
-		return [...this.inner]
-	}
-
-	public add_user(user: User): void {
-		this.inner.push(user)
-	}
-
-	public remove_user(user: User): User | undefined {
-		for (let i = 0; i<this.inner.length; i++) {
-			if (this.inner[i].get_uname() === user.get_uname()) {
-				this.inner.splice(i, 1)
-				return this.inner[i]
-			}
-		}
-		return undefined
-	}
-}
-
-const groups: Groups = {
-	wheel: new Group(SysGroups.Wheel),
-	users: new Group(SysGroups.Users),
-	together: function() {
-		return [...this.wheel.get_users(), ...this.users.get_users()]
-	}
-}
 
 let uid_count = 0
-
-function wrap_user_search(status: GroupSearch, result?: User_Index): WrapUserSearch {
-	return wrap(result, status)
-}
-
-function group_iter_for_user(uname: string, group_t: Group): User_Index | undefined {
-	const group_t_users = group_t.get_users()
-	for (let i = 0; i<group_t_users.length; i++) {
-		if (group_t_users[i].get_uname() === uname) {
-			return [group_t_users[i], i]
-		}
-	}
-	return undefined
-}
-
-function groups_find_user(uname: string): WrapUserSearch {
-	const exist_in_wheel = group_iter_for_user(uname, groups.wheel)
-	if (exist_in_wheel) {
-		return wrap_user_search(GroupSearch.WheelResult, exist_in_wheel)
-	}
-	const exist_in_users = group_iter_for_user(uname, groups.users)
-	if (exist_in_users) {
-		return wrap_user_search(GroupSearch.UsersResult, exist_in_users)
-	}
-	return wrap_user_search(GroupSearch.NotFound)
-}
-
-function group_add(new_user: User, group_t: Group): GroupSearch {
-	const dups = groups_find_user(new_user.get_uname())
-	if (dups.status === GroupSearch.NotFound) {
-		group_t.add_user(new_user)
-	}
-	return dups.status
-}
-
-function group_remove(uname: string, group_t: Group): GroupRemoveStatus {
-	if (uname !== ROOT_ID.NAME) {
-		const found_user = group_t.get_users().find(user => user.get_uname() === uname)
-		if (found_user) {
-			group_t.remove_user(found_user)
-			return GroupRemoveStatus.Ok
-		}
-		return GroupRemoveStatus.RemovingNonExistentUser
-	}
-	return GroupRemoveStatus.RootBlocked
-}
-
-function group_user_move(uname: string, new_group: SysGroups): UserMoveStatus {
-	if (uname === ROOT_ID.NAME) { return UserMoveStatus.RootBlocked }
-
-	const find_in_group = groups_find_user(uname)
-	if (find_in_group.status === GroupSearch.NotFound) { return UserMoveStatus.MovingNonExistentUser }
-
-	if (new_group === SysGroups.Wheel) {
-		if (find_in_group.status === GroupSearch.WheelResult) { return UserMoveStatus.AlreadyInWheel }
-		const removed_users_user = groups.users.remove_user((find_in_group.result as User_Index)[0])
-		groups.wheel.add_user(removed_users_user as User)
-	} else if (new_group === SysGroups.Users) {
-		if (find_in_group.status === GroupSearch.UsersResult) { return UserMoveStatus.AlreadyInUsers }
-		const removed_wheel_user = groups.wheel.remove_user((find_in_group.result as User_Index)[0])
-		groups.users.add_user(removed_wheel_user as User)
-	}
-	return UserMoveStatus.Ok
-}
-
-function group_wheel_add(new_user: User): GroupSearch {
-	return group_add(new_user, groups.wheel)
-}
-
-function group_wheel_remove(uname: string): GroupRemoveStatus {
-	return group_remove(uname, groups.wheel)
-}
-
-function group_users_add(new_user: User): GroupSearch {
-	return group_add(new_user, groups.users)
-}
-
-function group_users_remove(uname: string): GroupRemoveStatus {
-	return group_remove(uname, groups.users)
-}
 
 class user_lib {
 	public static current_sys_user: User;
@@ -200,6 +50,13 @@ class User extends user_lib {
 		this.password = password
 	}
 
+	private set_as_current(): boolean {
+		User.get_sys_user().current = false
+		User.current_sys_user = this
+		this.current = true
+		return this.current
+	}
+
 	public get_uid() {
 		return this.uid
 	}
@@ -208,13 +65,12 @@ class User extends user_lib {
 		return this.current
 	}
 
-	public login(password?: SHA256_String): boolean {
-		if (password === this.password) {
-			const other_user = User.get_sys_user()
-			other_user.current = false
-			this.current = true
-			User.current_sys_user = this
-			return this.current
+	public async login(password?: string): Promise<boolean> {
+		if (!this.password) {
+			return this.set_as_current()
+		}
+		if (password && await new Crypto(password).sha256_string() === this.password) {
+			return this.set_as_current()
 		}
 		return false
 	}
@@ -244,19 +100,11 @@ class User extends user_lib {
 	}
 }
 
-groups.wheel.push(
-	new User(ROOT_ID.NAME, "9025f0dd51ed4f2b2dc2791b6a15eff804555c283bac50d1d8923c18a51f977b")
+groups.wheel.add_user(
+	new User(ROOT_ID.NAME, "90a956efae97cca5ec584977d96a236aa76b0a07def9fcafab87fd221a1d2cfe")
 )
-groups.users.push(
+groups.users.add_user(
 	new User("user")
 )
 
 export default User
-export {
-	group_wheel_remove,
-	group_users_remove,
-	group_wheel_add,
-	group_users_add,
-	group_user_move,
-	SysGroups,
-}

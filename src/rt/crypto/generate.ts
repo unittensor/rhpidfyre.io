@@ -7,7 +7,7 @@ class Crypto {
 		this.inner = inner
 	}
 
-	public async sha256_string(): Promise<string> {
+	public async sha256_string(): Promise<SHA256_String> {
 		const encoder = new TextEncoder()
 		const hash = await crypto.subtle.digest("SHA-256", encoder.encode(this.inner))
 		const hash_as_uint8 = new Uint8Array(hash)
