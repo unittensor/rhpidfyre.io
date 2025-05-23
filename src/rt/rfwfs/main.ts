@@ -1,4 +1,5 @@
 import wrap, { type WrapResult, ConstEnum, Option } from "./wrap"
+import { Group, SysGroups } from "./groups"
 
 import directory_search from "./index"
 import User from "./users"
@@ -8,10 +9,6 @@ const enum EntryType {
 	File,
 	Directory,
 	Binary,
-}
-const enum ROOT_ID {
-	TRUNK = "/",
-	NAME  = "root"
 }
 const enum PushStatus {
 	Ok,
@@ -23,15 +20,26 @@ const enum ReadStatus {
 	NotFound,
 	Denied,
 }
+
+const enum ROOT_ID {
+	TRUNK = "/",
+	NAME  = "root"
+}
 const enum Permissions {
-	r = 1<<0,
-	w = 1<<1,
-	x = 1<<2,
+	r   = 1<<0,
+	w   = 1<<1,
+	x   = 1<<2,
+	rwx = Permissions.r | Permissions.w | Permissions.x
+}
+
+interface EntryPermissions {
+	group: Group,
+	owner: User,
 }
 
 interface Entry<T extends EntryType = EntryType, N = EntryValue<string>> {
 	readonly type: T,
-	owner: User,
+	permissions: EntryPermissions,
 	timestamp: number,
 	name: N
 }
@@ -52,7 +60,7 @@ interface Root extends Entry<EntryType.Root, ROOT_ID.TRUNK> {
 
 interface DirectoryInRootProperties {
 	permissions: Permissions,
-	name: string
+	name: string,
 	timestamp: number,
 }
 
@@ -127,15 +135,26 @@ function fs_dir_pop<T extends Entry>(dir: DirectoryAssociates<T>, file_name: str
 
 class EntryValue<V> {
 	public inner: V;
-	protected user_perms: UserPermissions;
+	protected user_perms: EntryPermissions;
 
-	constructor(user: UserPermissions, value: V) {
+	constructor(user: EntryPermissions, value: V) {
 		this.inner = value
 		this.user_perms = user
 	}
 
+	private is_wheel_user(user: User): boolean {
+		return user.get_group() === SysGroups.Wheel
+	}
+
 	public read(): V | undefined {
-		return rfwfs_lib.read_access(this.user_perms.permissions) ? this.inner : undefined
+		if (this.is_wheel_user(this.user_perms.owner)) {
+			return this.inner
+		}
+		if (rfwfs_lib.read_access(permissions)) {
+
+		}
+		return undefined
+		// return rfwfs_lib.read_access(this.user_perms.permissions) ? this.inner : undefined
 	}
 
 	public write<T extends V>(new_value: T): boolean {

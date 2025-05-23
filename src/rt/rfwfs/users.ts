@@ -1,7 +1,9 @@
 import { ROOT_ID } from "./main";
+import { Permissions } from "./main";
 
 import Crypto, { type SHA256_String } from "../crypto/generate";
-import groups, { groups_find_user, GroupSearch } from "./groups";
+import groups, { groups_find_user, GroupSearch, SysGroups } from "./groups";
+
 
 const enum UserSet {
 	Ok,
@@ -30,24 +32,31 @@ class user_lib {
 }
 
 class User extends user_lib {
-	private current: boolean;
-	private name: string;
 	private password?: SHA256_String;
+	private current: boolean;
+	private group: SysGroups;
+	private name: string;
 	private uid: number;
 
-	constructor(name: string, password?: SHA256_String) {
+	public permissions: Permissions;
+
+	constructor(name: string, group: SysGroups, global_perms?: Permissions, password?: SHA256_String) {
 		super()
 
 		const root_creation = name === ROOT_ID.NAME
 		if (root_creation) {
 			this.uid = 0
+			this.group = SysGroups.Wheel
 		} else {
 			uid_count += 1
 			this.uid = uid_count
+			this.group = group
 		}
 		this.name = name
 		this.current = root_creation
 		this.password = password
+		//Wheel users will have all permissions
+		this.permissions = group === SysGroups.Users ? (global_perms ? global_perms : Permissions.rwx) : Permissions.rwx
 	}
 
 	private set_as_current(): boolean {
@@ -60,9 +69,17 @@ class User extends user_lib {
 	public get_uid() {
 		return this.uid
 	}
-
 	public is_logged_in(): boolean {
 		return this.current
+	}
+	public get_group(): SysGroups {
+		return this.group
+	}
+	public get_uname() {
+		return this.name
+	}
+	public get_password(): SHA256_String | undefined {
+		return this.password
 	}
 
 	public async login(password?: string): Promise<boolean> {
@@ -75,20 +92,12 @@ class User extends user_lib {
 		return false
 	}
 
-	public get_uname() {
-		return this.name
-	}
-
 	public set_uname(new_uname: string): GroupSearch {
 		const search = groups_find_user(new_uname)
 		if (search.status === GroupSearch.NotFound) {
 			this.name = new_uname
 		}
 		return search.status
-	}
-
-	public get_password(): SHA256_String | undefined {
-		return this.password
 	}
 
 	public async set_password(new_password?: string): Promise<void> {
@@ -101,7 +110,7 @@ class User extends user_lib {
 }
 
 groups.wheel.add_user(
-	new User(ROOT_ID.NAME, "90a956efae97cca5ec584977d96a236aa76b0a07def9fcafab87fd221a1d2cfe")
+	new User(ROOT_ID.NAME, SysGroups.Wheel, "90a956efae97cca5ec584977d96a236aa76b0a07def9fcafab87fd221a1d2cfe")
 )
 groups.users.add_user(
 	new User("user")
