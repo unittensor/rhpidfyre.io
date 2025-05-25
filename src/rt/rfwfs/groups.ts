@@ -6,6 +6,8 @@ import User from "./users";
 type User_Index = [User, number]
 type WrapUserSearch = WrapResult<User_Index | undefined, GroupSearch>
 
+type SysGroupsNames = "wheel" | "users"
+
 const enum SysGroups {
 	Wheel,
 	Users,
@@ -36,28 +38,35 @@ interface Groups {
 
 class Group {
 	protected inner: User[];
-	private type: SysGroups;
+	private group_type: SysGroups;
 
 	constructor(type: SysGroups) {
-		this.type = type
+		this.group_type = type
 		this.inner = []
 	}
 
-	public get_type(): SysGroups {
-		return this.type
-	}
-
-	public get_users(): User[] {
+	public users(): User[] {
 		return [...this.inner]
 	}
+	public type(): SysGroups {
+		return this.group_type
+	}
+	public type_as_name(): SysGroupsNames {
+		return this.type() === SysGroups.Wheel ? "wheel" : "users"
+	}
 
-	public add_user(user: User): void {
-		this.inner.push(user)
+	public add_user(user: User): boolean {
+		const duplicate = this.inner.find(user_in_group => user_in_group.uname() === user.uname())
+		if (!duplicate) {
+			this.inner.push(user)
+			return true
+		}
+		return false
 	}
 
 	public remove_user(user: User): User | undefined {
 		for (let i = 0; i<this.inner.length; i++) {
-			if (this.inner[i].get_uname() === user.get_uname()) {
+			if (this.inner[i].uname() === user.uname()) {
 				this.inner.splice(i, 1)
 				return this.inner[i]
 			}
@@ -70,7 +79,7 @@ const groups: Groups = {
 	wheel: new Group(SysGroups.Wheel),
 	users: new Group(SysGroups.Users),
 	together: function() {
-		return [...this.wheel.get_users(), ...this.users.get_users()]
+		return [...this.wheel.users(), ...this.users.users()]
 	}
 }
 
@@ -79,9 +88,9 @@ function wrap_user_search(status: GroupSearch, result?: User_Index): WrapUserSea
 }
 
 function group_iter_for_user(uname: string, group_t: Group): User_Index | undefined {
-	const group_t_users = group_t.get_users()
+	const group_t_users = group_t.users()
 	for (let i = 0; i<group_t_users.length; i++) {
-		if (group_t_users[i].get_uname() === uname) {
+		if (group_t_users[i].uname() === uname) {
 			return [group_t_users[i], i]
 		}
 	}
@@ -101,7 +110,7 @@ function groups_find_user(uname: string): WrapUserSearch {
 }
 
 function group_add(new_user: User, group_t: Group): GroupSearch {
-	const dups = groups_find_user(new_user.get_uname())
+	const dups = groups_find_user(new_user.uname())
 	if (dups.status === GroupSearch.NotFound) {
 		group_t.add_user(new_user)
 	}
@@ -110,7 +119,7 @@ function group_add(new_user: User, group_t: Group): GroupSearch {
 
 function group_remove(uname: string, group_t: Group): GroupRemoveStatus {
 	if (uname !== ROOT_ID.NAME) {
-		const found_user = group_t.get_users().find(user => user.get_uname() === uname)
+		const found_user = group_t.users().find(user => user.uname() === uname)
 		if (found_user) {
 			group_t.remove_user(found_user)
 			return GroupRemoveStatus.Ok
@@ -162,6 +171,7 @@ export {
 	group_wheel_add,
 	group_users_add,
 	group_user_move,
+	type SysGroupsNames,
 	GroupRemoveStatus,
 	GroupSearch,
 	SysGroups,

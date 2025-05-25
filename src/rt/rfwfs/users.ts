@@ -1,19 +1,41 @@
 import { ROOT_ID } from "./main";
-import { Permissions } from "./main";
 
-import Crypto, { type SHA256_String } from "../crypto/generate";
-import groups, { groups_find_user, GroupSearch, SysGroups } from "./groups";
-
+import Crypto, { type SHA256 } from "../crypto/generate";
+import groups, { groups_find_user, GroupSearch, SysGroups, Group } from "./groups";
 
 const enum UserSet {
 	Ok,
 	AlreadyLoggedIn,
-	UserDoesNotExist
+	UserDoesNotExist,
+}
+const enum PasswordCheckStatus {
+	Ok,
+	MinBound,
+	MaxBound,
+}
+const enum PasswordSetStatus {
+	Ok,
+	RootRequiresPassword,
+	MinBound,
+	MaxBound,
+	Incorrect,
+}
+const enum SetUnameStatus {
+	Ok,
+	CantChangeRootName,
+	NotFound,
+	WheelResult,
+	UsersResult,
 }
 
-let uid_count = 0
+const enum PASS_BOUNDS {
+	MIN = 4,
+	MAX = 1 << 12, //64 ^ 2
+}
 
-class user_lib {
+let uid_count: number = 0
+
+class LibUser {
 	public static current_sys_user: User;
 
 	public static get_sys_user(): User {
@@ -26,94 +48,135 @@ class user_lib {
 		if (!result_user_i)                  { return UserSet.UserDoesNotExist }
 		if (result_user_i[0].is_logged_in()) { return UserSet.AlreadyLoggedIn }
 
-		user_lib.current_sys_user = result_user_i[0]
+		LibUser.current_sys_user = result_user_i[0]
 		return UserSet.Ok
+	}
+
+	public static in_password_bounds(password: string): PasswordCheckStatus {
+		//Math.min(Math.max(PASS_BOUNDS.MIN, password.length), PASS_BOUNDS.MAX) < PASS_BOUNDS.MAX
+		if (password.length > PASS_BOUNDS.MIN) {
+			if (password.length < PASS_BOUNDS.MAX) {
+				return PasswordCheckStatus.Ok
+			}
+			return PasswordCheckStatus.MaxBound
+		}
+		return PasswordCheckStatus.MinBound
 	}
 }
 
-class User extends user_lib {
-	private password?: SHA256_String;
+class User {
+	private inner_password?: SHA256;
+	private inner_group: Group;
+	private inner_name: string;
+	private inner_uid: number;
 	private current: boolean;
-	private group: SysGroups;
-	private name: string;
-	private uid: number;
 
-	public permissions: Permissions;
-
-	constructor(name: string, group: SysGroups, global_perms?: Permissions, password?: SHA256_String) {
-		super()
-
+	constructor(name: string, group: Group, password?: SHA256) {
 		const root_creation = name === ROOT_ID.NAME
 		if (root_creation) {
-			this.uid = 0
-			this.group = SysGroups.Wheel
+			this.inner_uid = 0
+			this.inner_group = group
 		} else {
 			uid_count += 1
-			this.uid = uid_count
-			this.group = group
+			this.inner_uid = uid_count
+			this.inner_group = group
 		}
-		this.name = name
+
+		this.inner_name = name
 		this.current = root_creation
-		this.password = password
-		//Wheel users will have all permissions
-		this.permissions = group === SysGroups.Users ? (global_perms ? global_perms : Permissions.rwx) : Permissions.rwx
+		this.inner_password = password
 	}
 
 	private set_as_current(): boolean {
-		User.get_sys_user().current = false
-		User.current_sys_user = this
+		LibUser.get_sys_user().current = false
+		LibUser.current_sys_user = this
 		this.current = true
 		return this.current
 	}
 
-	public get_uid() {
-		return this.uid
-	}
 	public is_logged_in(): boolean {
 		return this.current
 	}
-	public get_group(): SysGroups {
-		return this.group
+	public in_wheel(): boolean {
+		return this.inner_group.type() === SysGroups.Wheel
 	}
-	public get_uname() {
-		return this.name
+	public password(): SHA256 | undefined {
+		return this.inner_password
 	}
-	public get_password(): SHA256_String | undefined {
-		return this.password
+	public is_root(): boolean {
+		return this.inner_name === ROOT_ID.NAME && this.inner_uid === ROOT_ID.UID
+	}
+	public group(): Group {
+		return this.inner_group
+	}
+	public uname(): string {
+		return this.inner_name
+	}
+	public uid(): number {
+		return this.inner_uid
+	}
+
+	public async check_password(password?: string): Promise<boolean> {
+		if (!(password && this.inner_password) || (await new Crypto(password).sha256_hash()).secret === this.inner_password.secret) {
+			return true
+		}
+		return false
 	}
 
 	public async login(password?: string): Promise<boolean> {
-		if (!this.password) {
-			return this.set_as_current()
-		}
-		if (password && await new Crypto(password).sha256_string() === this.password) {
+		if (!this.inner_password || (password && await this.check_password(password))) {
 			return this.set_as_current()
 		}
 		return false
 	}
 
-	public set_uname(new_uname: string): GroupSearch {
+	public set_uname(new_uname: string): SetUnameStatus {
+		if (this.is_root()) { return SetUnameStatus.CantChangeRootName }
+
 		const search = groups_find_user(new_uname)
-		if (search.status === GroupSearch.NotFound) {
-			this.name = new_uname
+		switch (search.status) {
+			case GroupSearch.NotFound:
+				this.inner_name = new_uname
+				break
+			case GroupSearch.UsersResult:
+				return SetUnameStatus.UsersResult
+			case GroupSearch.WheelResult:
+				return SetUnameStatus.WheelResult
 		}
-		return search.status
+		return SetUnameStatus.Ok
 	}
 
-	public async set_password(new_password?: string): Promise<void> {
-		if (new_password) {
-			this.password = await new Crypto(new_password).sha256_string()
-		} else {
-			this.password = undefined
+	public async set_password(current_password: string, new_password?: string): Promise<PasswordSetStatus> {
+		if (await this.check_password(current_password)) {
+			if (new_password) {
+				switch (LibUser.in_password_bounds(new_password)) {
+					case PasswordCheckStatus.Ok:
+						this.inner_password = await new Crypto(new_password).sha256_hash()
+						break
+					case PasswordCheckStatus.MinBound:
+						return PasswordSetStatus.MinBound
+					case PasswordCheckStatus.MaxBound:
+						return PasswordSetStatus.MaxBound
+				}
+			} else {
+				if (this.is_root()) { return PasswordSetStatus.RootRequiresPassword }
+				//This user has no password
+				this.inner_password = undefined
+			}
+			return PasswordSetStatus.Ok
 		}
+		return PasswordSetStatus.Incorrect
 	}
 }
 
 groups.wheel.add_user(
-	new User(ROOT_ID.NAME, SysGroups.Wheel, "90a956efae97cca5ec584977d96a236aa76b0a07def9fcafab87fd221a1d2cfe")
+	new User(ROOT_ID.NAME, groups.wheel, { secret: "90a956efae97cca5ec584977d96a236aa76b0a07def9fcafab87fd221a1d2cfe" })
 )
 groups.users.add_user(
-	new User("user")
+	new User("user", groups.users)
 )
 
 export default User
+export {
+	LibUser
+}

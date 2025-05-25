@@ -1,4 +1,6 @@
-type SHA256_String = string
+interface SHA256 {
+	readonly secret: string
+}
 
 class Crypto {
 	protected inner: string
@@ -7,15 +9,16 @@ class Crypto {
 		this.inner = inner
 	}
 
-	public async sha256_string(): Promise<SHA256_String> {
+	public async sha256_hash(): Promise<SHA256> {
 		const encoder = new TextEncoder()
 		const hash = await crypto.subtle.digest("SHA-256", encoder.encode(this.inner))
 		const hash_as_uint8 = new Uint8Array(hash)
-	    return Array.from(hash_as_uint8).map(byte => byte.toString(16).padStart(2, "0")).join("")
+
+		return { secret: Array.from(hash_as_uint8).map(byte => byte.toString(16).padStart(2, "0")).join("") }
 	}
 }
 
 export default Crypto
 export {
-	type SHA256_String
+	type SHA256
 }

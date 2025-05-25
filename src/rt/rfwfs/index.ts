@@ -10,7 +10,7 @@ export default function directory_search<T extends Entry>(dir_files: T[], file_n
 	let end = dir_files.length-1
 	while (start<=end) {
 		const median = (start+end)>>1
-		const median_name = dir_files[median].name.inner
+		const median_name = dir_files[median].name.__inner()
 
 		if (median_name === file_name) {
 			return wrap_bsearch(median, dir_files[median])

@@ -1,14 +1,15 @@
 import wrap, { type WrapResult, ConstEnum, Option } from "./wrap"
-import { Group, SysGroups } from "./groups"
+import { SysGroups } from "./groups"
 
 import directory_search from "./index"
-import User from "./users"
+import User, { LibUser } from "./users"
 
 const enum EntryType {
 	Root,
 	File,
 	Directory,
 	Binary,
+	SymLink,
 }
 const enum PushStatus {
 	Ok,
@@ -18,58 +19,77 @@ const enum PushStatus {
 const enum ReadStatus {
 	Ok,
 	NotFound,
+	NotInGroup,
 	Denied,
+}
+const enum ModifyStatus {
+	Ok,
+	NotInGroup,
+	Denied,
+}
+const enum ModifyAccessType {
+	Read,
+	Write,
 }
 
 const enum ROOT_ID {
 	TRUNK = "/",
-	NAME  = "root"
+	NAME  = "root",
+	UID   = 0,
 }
-const enum Permissions {
-	r   = 1<<0,
-	w   = 1<<1,
-	x   = 1<<2,
-	rwx = Permissions.r | Permissions.w | Permissions.x
-}
-
-interface EntryPermissions {
-	group: Group,
-	owner: User,
+const enum PERMISSION_FLAGS {
+	NONE = -1,
+	R    = 1 << 0,
+	W    = 1 << 1,
+	X    = 1 << 2,
+	RWX  = PERMISSION_FLAGS.R | PERMISSION_FLAGS.W | PERMISSION_FLAGS.X
 }
 
-interface Entry<T extends EntryType = EntryType, N = EntryValue<string>> {
+interface Permissions<W = Gate<PERMISSION_FLAGS>, U = Gate<PERMISSION_FLAGS>> {
+	wheel: W,
+	users: U,
+}
+type GroupPermissionsRoot = Permissions<Gate<PERMISSION_FLAGS>, Gate<PERMISSION_FLAGS.NONE>>
+
+interface Metadata {
+	[index: string]: string
+}
+
+interface Entry<
+	T extends EntryType = EntryType,
+	P extends Permissions = Permissions,
+	N = Gate<string>
+> {
 	readonly type: T,
-	permissions: EntryPermissions,
-	timestamp: number,
-	name: N
-}
-
-interface DirectoryContainer<T> extends Entry {
-	files: EntryValue<Entry[]>,
-	parent: T | null
+	permissions: P,
+	timestamp: Gate<number>,
+	metadata: Gate<Metadata>,
+	group: Gate<SysGroups>,
+	owner: Gate<User>,
+	name: N,
 }
 
 type Directory<T extends Entry> = DirectoryContainer<RfwfsDirectory<T>>
-type DirectoryInRoot = DirectoryContainer<Root>
 
-interface Root extends Entry<EntryType.Root, ROOT_ID.TRUNK> {
-	timestamp: number,
+interface DirectoryContainer<T> extends Entry {
+	files: Gate<Entry[]>,
+	parent: Gate<T> | null,
+}
+
+interface Root extends Entry<EntryType.Root, GroupPermissionsRoot, ROOT_ID.TRUNK> {
 	parent: null,
-	files: EntryValue<Entry[]>,
+	files: Gate<Entry[]>,
+}
+
+interface DirectoryInRoot extends Entry<EntryType.Root, Permissions {
+
 }
 
 interface DirectoryInRootProperties {
-	permissions: Permissions,
-	name: string,
+	permissions: Permissions<PERMISSION_FLAGS, PERMISSION_FLAGS.NONE>,
 	timestamp: number,
-}
-
-interface DirectoryProperties<T extends Entry> extends DirectoryInRootProperties {
-	parent: RfwfsDirectory<T>,
-}
-
-interface FileProperties extends Entry {
-
+	metadata: Metadata,
+	name: string,
 }
 
 /** Other directory types that can be treated as a single arbitrary directory.
@@ -85,6 +105,7 @@ type EntryAssociates = Entry | Root
 
 type WrapResultEntry<T extends Entry, U> = WrapResult<T | undefined, U>
 type WrapResultNone<T>                   = WrapResult<Option.None, T>
+type WrapEntryRead<V>                    = WrapResult<V | undefined, ModifyStatus>
 
 function wrap_entry<T extends ConstEnum, U extends Entry>(status: T, result?: U): WrapResultEntry<U, T> {
 	return wrap(result, status)
@@ -94,12 +115,16 @@ function wrap_none<T extends ConstEnum>(status: T): WrapResultNone<T> {
 	return wrap(Option.None, status)
 }
 
+function wrap_entry_read<V>(status: ModifyStatus, result?: V): WrapEntryRead<V> {
+	return wrap(result, status)
+}
+
 function fs_dir_sort<T extends Entry>(dir: DirectoryAssociates<T>) {
-	dir.files.inner.sort((a,z) => a.name.inner.localeCompare(z.name.inner))
+	dir.files.__inner().sort((a,z) => a.name.__inner().localeCompare(z.name.__inner()))
 }
 
 function fs_dir_clone<T extends Entry>(dir: DirectoryAssociates<T>, file_name: string): WrapResultEntry<T, ReadStatus> {
-	const clone_find = directory_search(dir.files.inner, file_name)
+	const clone_find = directory_search(dir.files.__inner(), file_name)
 	if (clone_find) {
 		return wrap_entry(ReadStatus.Ok, { ...clone_find.result as T })
 	}
@@ -107,7 +132,7 @@ function fs_dir_clone<T extends Entry>(dir: DirectoryAssociates<T>, file_name: s
 }
 
 function fs_dir_find<T extends Entry>(dir: DirectoryAssociates<T>, file_name: string): WrapResultEntry<T, ReadStatus> {
-	const file_search = directory_search(dir.files.inner, file_name)
+	const file_search = directory_search(dir.files.__inner(), file_name)
 	if (file_search) {
 		return wrap_entry(ReadStatus.Ok, file_search.result as T)
 	}
@@ -115,9 +140,9 @@ function fs_dir_find<T extends Entry>(dir: DirectoryAssociates<T>, file_name: st
 }
 
 function fs_dir_push<T extends Entry>(dir: DirectoryAssociates<T>, entry: Entry) {
-	const no_duplicates = directory_search(dir.files.inner, entry.name.inner)
+	const no_duplicates = directory_search(dir.files.__inner(), entry.name.__inner())
 	if (!no_duplicates) {
-		dir.files.inner.push(entry)
+		dir.files.__inner().push(entry)
 		fs_dir_sort(dir)
 		return wrap_none(PushStatus.Ok)
 	}
@@ -125,44 +150,82 @@ function fs_dir_push<T extends Entry>(dir: DirectoryAssociates<T>, entry: Entry)
 }
 
 function fs_dir_pop<T extends Entry>(dir: DirectoryAssociates<T>, file_name: string): WrapResultEntry<T, ReadStatus> {
-	const pop_find = directory_search(dir.files.inner, file_name)
+	const pop_find = directory_search(dir.files.__inner(), file_name)
 	if (pop_find) {
-		dir.files.inner.splice(pop_find.status, 1)
+		dir.files.__inner().splice(pop_find.status, 1)
 		return wrap_entry(ReadStatus.Ok, pop_find.result as T)
 	}
 	return wrap_entry(ReadStatus.NotFound)
 }
 
-class EntryValue<V> {
-	public inner: V;
-	protected user_perms: EntryPermissions;
+function user_group_perms(entry: EntryAssociates): PERMISSION_FLAGS | undefined {
+	const user               = LibUser.current_sys_user
+	const current_user_group = user.group()
 
-	constructor(user: EntryPermissions, value: V) {
+	if (user.is_root() || current_user_group.type() === entry.group.__inner()) {
+		return entry.permissions[current_user_group.type_as_name()].__inner()
+	}
+	return undefined
+}
+
+function user_group_read_write<T extends Entry>(entry: DirectoryAssociates<T>): ModifyStatus {
+	if (LibUser.current_sys_user.is_root()) {
+		return ModifyStatus.Ok
+	}
+	const group_perms = user_group_perms(entry)
+	if (group_perms) {
+		return LibRfwfs.read_write_access(group_perms) ? ModifyStatus.Ok : ModifyStatus.Denied
+	}
+	return ModifyStatus.NotInGroup
+}
+
+class Gate<V> {
+	private inner: V;
+	protected entry: EntryAssociates;
+
+	constructor(entry: EntryAssociates, value: V) {
 		this.inner = value
-		this.user_perms = user
+		this.entry = entry
 	}
 
-	private is_wheel_user(user: User): boolean {
-		return user.get_group() === SysGroups.Wheel
+	private access_read_write(accessType: ModifyAccessType): ModifyStatus {
+		const group_perms = user_group_perms(this.entry)
+		if (group_perms) {
+			switch (accessType) {
+				case ModifyAccessType.Read:
+					return LibRfwfs.read_access(group_perms)  ? ModifyStatus.Ok : ModifyStatus.Denied
+				case ModifyAccessType.Write:
+					return LibRfwfs.write_access(group_perms) ? ModifyStatus.Ok : ModifyStatus.Denied
+			}
+		}
+		return ModifyStatus.NotInGroup
 	}
 
-	public read(): V | undefined {
-		if (this.is_wheel_user(this.user_perms.owner)) {
-			return this.inner
-		}
-		if (rfwfs_lib.read_access(permissions)) {
-
-		}
-		return undefined
-		// return rfwfs_lib.read_access(this.user_perms.permissions) ? this.inner : undefined
+	public __inner(): V {
+		return this.inner
 	}
 
-	public write<T extends V>(new_value: T): boolean {
-		if (rfwfs_lib.write_access(this.user_perms.permissions)) {
-			this.inner = new_value
-			return true
+	public read(): WrapEntryRead<V> {
+		switch (this.access_read_write(ModifyAccessType.Read)) {
+			case ModifyStatus.Ok:
+				return wrap_entry_read(ModifyStatus.Ok, this.inner)
+			case ModifyStatus.NotInGroup:
+				return wrap_entry_read(ModifyStatus.NotInGroup)
+			case ModifyStatus.Denied:
+				return wrap_entry_read(ModifyStatus.Denied)
 		}
-		return false
+	}
+
+	public write<T extends V>(new_value: T): ModifyStatus {
+		switch (this.access_read_write(ModifyAccessType.Read)) {
+			case ModifyStatus.Ok:
+				this.inner = new_value
+				return ModifyStatus.Ok
+			case ModifyStatus.NotInGroup:
+				return ModifyStatus.NotInGroup
+			case ModifyStatus.Denied:
+				return ModifyStatus.Denied
+		}
 	}
 }
 
@@ -178,45 +241,45 @@ class RfwfsDirectory<T extends Entry> {
 	}
 
 	public clone(file_name: string): WrapResultEntry<Entry, ReadStatus> {
-		if (rfwfs.read_write_access(this.dir.permissions)) {
+		if (user_group_read_write(this.dir)) {
 			return fs_dir_clone(this.dir, file_name)
 		}
 		return wrap_entry(ReadStatus.Denied)
 	}
 
 	public find(file_name: string): WrapResultEntry<Entry, ReadStatus> {
-		if (rfwfs.read_write_access(this.dir.permissions)) {
+		if (user_group_read_write(this.dir)) {
 			return fs_dir_find(this.dir, file_name)
 		}
 		return wrap_entry(ReadStatus.Denied)
 	}
 
 	public push<E extends Entry>(entry: E): WrapResultNone<PushStatus> {
-		if (rfwfs.read_write_access(this.dir.permissions)) {
+		if (user_group_read_write(this.dir)) {
 			return fs_dir_push(this.dir, entry)
 		}
 		return wrap_none(PushStatus.Denied)
 	}
 
 	public pop(file_name: string): WrapResultEntry<Entry, ReadStatus> {
-		if (rfwfs.read_write_access(this.dir.permissions)) {
+		if (user_group_read_write(this.dir)) {
 			fs_dir_pop(this.dir, file_name)
 		}
 		return wrap_entry(ReadStatus.Denied)
 	}
 
 	public push_bulk_unsafe(dirs: T[]) {
-		dirs.forEach(dir => this.dir.files.inner.push(dir))
+		dirs.forEach(dir => this.dir.files.__inner().push(dir))
 		this.sort()
 	}
 
 	public push_unsafe(dir: T) {
-		this.dir.files.inner.push(dir)
+		this.dir.files.__inner().push(dir)
 		this.sort()
 	}
 }
 
-class rfwfs_lib {
+class LibRfwfs {
 	public static is_root<T extends Entry>(entry: T): boolean {
 		return entry.type === EntryType.Root
 	}
@@ -229,67 +292,51 @@ class rfwfs_lib {
 	public static is_binary<T extends Entry>(entry: T): boolean {
 		return entry.type === EntryType.Binary
 	}
+	public static is_symlink<T extends Entry>(entry: T): boolean {
+		return entry.type === EntryType.SymLink
+	}
 
-	public static read_access(permissions: Permissions): boolean {
-		return (permissions & Permissions.r) !== 0
+	public static read_access(permissions: PERMISSION_FLAGS): boolean {
+		return (permissions & PERMISSION_FLAGS.R) !== 0
 	}
-	public static write_access(permissions: Permissions): boolean {
-		return (permissions & Permissions.w) !== 0
+	public static write_access(permissions: PERMISSION_FLAGS): boolean {
+		return (permissions & PERMISSION_FLAGS.W) !== 0
 	}
-	public static execute_access(permissions: Permissions): boolean {
-		return (permissions & Permissions.x) !== 0
+	public static execute_access(permissions: PERMISSION_FLAGS): boolean {
+		return (permissions & PERMISSION_FLAGS.X) !== 0
 	}
-	public static read_write_access(permissions: Permissions): boolean {
-		return rfwfs.read_access(permissions) && rfwfs.write_access(permissions)
+	public static read_write_access(permissions: PERMISSION_FLAGS): boolean {
+		return LibRfwfs.read_access(permissions) && LibRfwfs.write_access(permissions)
 	}
 
 	public static directory_in_root(properties: DirectoryInRootProperties): RfwfsDirectory<DirectoryInRoot> {
-		class dir<P, F extends Entry> {
-			public parent: P;
-			public permissions: Permissions;
-			public timestamp: number;
-			public files: EntryValue<F[]>;
-			public name: EntryValue<string>;
-
-			constructor(permissions: Permissions, timestamp: number, name: string, parent: P, files: F[]) {
-				this.parent = parent
-				this.permissions = permissions
-				this.timestamp = timestamp
-				this.files = new EntryValue(this.permissions, files)
-			}
+		const dir_o = { type: EntryType.Directory } as DirectoryInRoot
+		dir_o.permissions = {
+			wheel: new Gate(dir_o, properties.permissions.wheel),
+			users: new Gate(dir_o, properties.permissions.users),
 		}
-		// const dir_o = { type: EntryType.Directory } as DirectoryInRoot
-		// dir_o.parent      = null
-		// dir_o.permissions = properties.permissions
-		// dir_o.timestamp   = properties.timestamp
-		// dir_o.files       = new EntryValue(dir_o, [])
-		// dir_o.name        = new EntryValue(dir_o, properties.name)
-		// return new RfwfsDirectory(dir_o)
-	}
-	public static directory<T extends Entry>(properties: DirectoryProperties<T>): RfwfsDirectory<T> {
-		const dir_o = { type: EntryType.Directory } as Directory<T>
-		dir_o.parent      = properties.parent
-		dir_o.permissions = properties.permissions
-		dir_o.timestamp   = properties.timestamp
-		dir_o.files       = new EntryValue(dir_o, [])
-		dir_o.name        = new EntryValue(dir_o, properties.name)
+		dir_o.metadata    = new Gate(dir_o, properties.metadata)
+		dir_o.timestamp   = new Gate(dir_o, properties.timestamp)
+		dir_o.files       = new Gate(dir_o, [])
+		dir_o.name        = new Gate(dir_o, properties.name)
+		dir_o.parent      = null
 		return new RfwfsDirectory(dir_o)
-	}
-	public static file(properties: FileProperties) {
-
 	}
 }
 
-class rfwfs extends rfwfs_lib {
+class Rfwfs extends LibRfwfs {
 	public root: Root;
 
 	constructor() {
 		super()
 		this.root = { type: EntryType.Root } as Root
-		this.root.permissions = Permissions.r | Permissions.w
-		this.root.timestamp = (Date.now()/1000) | 0
+		this.root.permissions = {
+			wheel: new Gate(this.root, PERMISSION_FLAGS.RWX),
+			users: new Gate(this.root, PERMISSION_FLAGS.NONE)
+		}
+		this.root.timestamp = new Gate(this.root, (Date.now()/1000) | 0)
 		this.root.parent = null
-		this.root.files = new EntryValue(this.root, [])
+		this.root.files = new Gate(this.root, [])
 		this.root.name = ROOT_ID.TRUNK
 	}
 
@@ -298,51 +345,51 @@ class rfwfs extends rfwfs_lib {
 	}
 
 	public clone(file_name: string): WrapResultEntry<Entry, ReadStatus> {
-		if (rfwfs.read_write_access(this.root.permissions)) {
+		if (user_group_read_write(this.root)) {
 			return fs_dir_clone(this.root, file_name)
 		}
 		return wrap_entry(ReadStatus.Denied)
 	}
 
 	public find(file_name: string): WrapResultEntry<Entry, ReadStatus> {
-		if (rfwfs.read_write_access(this.root.permissions)) {
+		if (user_group_read_write(this.root)) {
 			return fs_dir_find(this.root, file_name)
 		}
 		return wrap_entry(ReadStatus.Denied)
 	}
 
 	public push<T extends Entry>(entry: T): WrapResultNone<PushStatus> {
-		if (rfwfs.read_write_access(this.root.permissions)) {
+		if (user_group_read_write(this.root)) {
 			return fs_dir_push(this.root, entry)
 		}
 		return wrap_none(PushStatus.Denied)
 	}
 
 	public pop(file_name: string): WrapResultEntry<Entry, ReadStatus> {
-		if (rfwfs.read_write_access(this.root.permissions)) {
+		if (user_group_read_write(this.root)) {
 			fs_dir_pop(this.root, file_name)
 		}
 		return wrap_entry(ReadStatus.Denied)
 	}
 
 	public push_bulk_unsafe(dirs: DirectoryInRoot[]) {
-		dirs.forEach(dir => this.root.files.inner.push(dir))
+		dirs.forEach(dir => this.root.files.__inner().push(dir))
 		this.sort()
 	}
 
 	public push_unsafe(dir: DirectoryInRoot) {
-		this.root.files.inner.push(dir)
+		this.root.files.__inner().push(dir)
 		this.sort()
 	}
 }
 
-export default rfwfs
+export default Rfwfs
 export {
 	type DirectoryInRoot,
 	type RfwfsDirectory,
 	type Directory,
 	type Entry,
-	Permissions,
+	PERMISSION_FLAGS,
 	EntryType,
 	ROOT_ID,
 }
